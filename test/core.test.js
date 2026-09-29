@@ -264,7 +264,7 @@ test('render: emoji are two columns wide', () => {
 test('render: every style renders a think card and hides the answer', () => {
   const it = item('tcp-think-001', { type: 'think', title: 'Handshake', question: 'Why three steps?', answer: 'SECRET ANSWER' });
   for (const style of ['rail', 'box', 'plain']) {
-    const out = renderCard(it, { style, width: 64 });
+    const out = renderCard(it, { style, width: 64, reveal: 'next-turn' });
     assert.ok(out.includes('THINK FIRST'));
     assert.ok(out.includes('Why three steps?'));
     assert.ok(!out.includes('SECRET ANSWER'), 'answer must not leak before reveal');

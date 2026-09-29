@@ -99,18 +99,22 @@ function fmtDate(ms) {
 
 // A freshly selected card.
 function renderCard(item, opts = {}) {
-  const { revealHint = true, reveal = 'next-turn' } = opts;
+  const { reveal = 'inline' } = opts;
+  const inline = reveal === 'inline' && hasAnswer(item);
+  const revealHint = !inline && opts.revealHint !== false;
   const [icon, label] = HEADERS[item.type] || HEADERS.fact;
   const header = `${icon} ${label} · ${item.topicName || item.topic}${item.ai ? ' · ✨ from your code' : ''}`;
-  const later = reveal === 'next-turn' ? ' (or wait: it appears after your next turn)' : '';
+  const later = reveal === 'next-turn' ? ' (or wait: it appears when Claude finishes)' : '';
   const blocks = [];
   switch (item.type) {
     case 'think':
       blocks.push(item.title, item.question);
+      if (inline) blocks.push(`💡 ${item.answer}`);
       if (revealHint) blocks.push(`💭 Think it through first. /devsharp:reveal shows the answer${later}.`);
       break;
     case 'why':
       blocks.push(item.question);
+      if (inline) blocks.push(`💡 ${item.answer}`);
       if (revealHint) blocks.push(`💭 Have a guess. /devsharp:reveal shows the answer${later}.`);
       break;
     case 'update':
@@ -122,7 +126,9 @@ function renderCard(item, opts = {}) {
     case 'fact':
     default:
       blocks.push(item.title, item.body);
-      if (item.question && item.answer) {
+      if (inline) {
+        blocks.push(`🤔 ${item.question}`, `💡 ${item.answer}`);
+      } else if (item.question && item.answer) {
         blocks.push(`💡 Think: ${item.question}${revealHint ? ` (/devsharp:reveal${later ? ' or next turn' : ''})` : ''}`);
       }
   }
@@ -138,7 +144,8 @@ function hasAnswer(item) {
 // The answer to a Think First / Why / "Think:" prompt.
 function renderAnswer(item, opts = {}) {
   const [icon, label] = HEADERS.answer;
-  const header = `${icon} ${label} · ${item.topicName || item.topic}${item.ai ? ' · ✨ from your code' : ''}`;
+  const when = opts.done ? ' · Claude is done' : opts.still ? ' · Claude is still working' : '';
+  const header = `${icon} ${label} · ${item.topicName || item.topic}${item.ai ? ' · ✨ from your code' : ''}${when}`;
   const blocks = [item.title];
   if (item.question) blocks.push(`Q: ${item.question}`);
   blocks.push(item.answer);

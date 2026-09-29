@@ -24,13 +24,16 @@ const DEFAULTS = Object.freeze({
   frequency: 'medium',
   mode: 'mixed',
   show_after_prompt: true,
+  card_timing: 'during',
+  mid_run: true,
+  mid_run_interval: '3m',
   minimum_interval: 'auto',
   topics: 'auto',
   difficulty: 'adaptive',
   updates: true,
   update_refresh_hours: 24,
   think_first: true,
-  reveal: 'next-turn',
+  reveal: 'inline',
   project_awareness: true,
   card_style: 'rail',
   card_width: 64,
@@ -45,14 +48,17 @@ const DESCRIPTIONS = {
   enabled: 'Master switch (true/false)',
   frequency: 'off | low | medium | high',
   mode: MODES.join(' | '),
-  show_after_prompt: 'Show cards after Claude finishes a turn (true/false)',
+  show_after_prompt: 'Show cards automatically (true/false)',
+  card_timing: 'during (card when you submit a prompt, answer when Claude finishes) | after (card after Claude finishes)',
+  mid_run: 'During long Claude runs, show a new card/answer every mid_run_interval (true/false)',
+  mid_run_interval: 'How often during a long run, e.g. 3m (minimum 1m)',
   minimum_interval: 'auto | duration like 10m, 1h (minimum time between cards)',
   topics: `auto | comma list of categories/topics (${CATEGORIES.slice(0, 4).join(', ')}, ...)`,
   difficulty: 'adaptive | easy | medium | hard',
   updates: 'Fetch public technology-update feeds in the background (true/false)',
   update_refresh_hours: 'Hours between update-feed refreshes (1-168)',
   think_first: 'Include Think First questions (true/false)',
-  reveal: 'next-turn (answer appears after your next turn) | manual (only /devsharp:reveal)',
+  reveal: 'inline (question and answer in one card, nothing to do) | next-turn (answer when Claude finishes) | manual (/devsharp:reveal)',
   project_awareness: 'Prioritise technologies detected in the current project (true/false)',
   card_style: 'rail | box | plain',
   card_width: 'Card width in columns (40-100)',
@@ -80,7 +86,7 @@ const bool = (v) => (v === true || v === 'true' || v === 'yes' || v === 'on' || 
 // Returns the normalised value, or undefined if invalid.
 function coerce(key, v) {
   switch (key) {
-    case 'enabled': case 'ai': case 'show_after_prompt': case 'updates': case 'think_first': case 'project_awareness':
+    case 'enabled': case 'ai': case 'mid_run': case 'show_after_prompt': case 'updates': case 'think_first': case 'project_awareness':
       return bool(v);
     case 'telemetry':
       return bool(v) === false ? false : undefined; // cannot be enabled: nothing to send
@@ -90,8 +96,14 @@ function coerce(key, v) {
       return typeof v === 'string' && MODES.includes(v.toLowerCase()) ? v.toLowerCase() : undefined;
     case 'difficulty':
       return ['adaptive', 'easy', 'medium', 'hard'].includes(v) ? v : undefined;
+    case 'card_timing':
+      return ['during', 'after'].includes(v) ? v : undefined;
+    case 'mid_run_interval': {
+      const ms = parseDuration(v);
+      return ms !== null && ms >= 60e3 ? String(v).trim() : undefined;
+    }
     case 'reveal':
-      return ['next-turn', 'manual'].includes(v) ? v : undefined;
+      return ['inline', 'next-turn', 'manual'].includes(v) ? v : undefined;
     case 'card_style':
       return ['rail', 'box', 'plain'].includes(v) ? v : undefined;
     case 'ai_model':

@@ -56,7 +56,13 @@ function handle(event, input, env = process.env, now = Date.now()) {
       return '';
     case 'prompt': {
       const m = COMMAND_RE.exec(typeof input.prompt === 'string' ? input.prompt : '');
-      if (!m) return '';
+      if (!m) {
+        if (typeof input.prompt !== 'string' || !input.prompt.trim()) return '';
+        // The developer just started waiting for Claude: the moment for a card.
+        // systemMessage is shown to the user only; plain stdout here would reach Claude.
+        const card = engine().onPromptSubmit(opts);
+        return card ? JSON.stringify({ systemMessage: `\n${card}` }) : '';
+      }
       const args = (m[2] || '').trim().split(/\s+/).filter(Boolean).slice(0, 10);
       const { text } = engine().runCommand(m[1], args, opts);
       return JSON.stringify({ decision: 'block', reason: `\n${text}`, suppressOriginalPrompt: true });
@@ -66,6 +72,14 @@ function handle(event, input, env = process.env, now = Date.now()) {
       const text = engine().onTurnEnd(opts);
       // Leading newline: Claude Code prefixes the message with "Stop says:"; keep the card's header on its own line.
       return text ? JSON.stringify({ systemMessage: `\n${text}` }) : '';
+    }
+    case 'tool': {
+      // Runs after EVERY tool call, so the common path is one tiny file read.
+      const { isDue } = require('../core/midrun');
+      const { paths } = require('../core/paths');
+      if (!isDue(paths(env), require('../core/store').sessionKey(opts.sessionId), now)) return '';
+      const card = engine().onMidRun(opts);
+      return card ? JSON.stringify({ systemMessage: `\n${card}` }) : '';
     }
     case 'session-end':
       engine().onSessionEnd(opts);

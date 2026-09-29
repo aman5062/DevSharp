@@ -1,6 +1,6 @@
 {
   "name": "devsharp",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "A zero-token learning companion for Claude Code: short technology facts, Think First questions and tech updates between AI turns.",
   "license": "MIT",
   "author": "Aman (https://github.com/aman5062)",

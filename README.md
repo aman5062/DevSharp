@@ -3,8 +3,9 @@
 **Keep learning while AI helps you code.**
 
 DevSharp is not another AI coding assistant. It is a small Claude Code plugin
-(and standalone CLI) that shows a short technology learning card between Claude
-turns: a quick fact, a question to think about, a concept, a "why does it work
+(and standalone CLI) that shows a short technology learning card **while you wait
+for Claude**: the moment you send a prompt, and again every few minutes during long
+runs. Each card is a complete lesson you just read, with nothing to click. It can be a quick fact, a question to think about, a concept, a "why does it work
 like this?", or a headline from a project you depend on.
 
 Its core never calls a language model and adds **zero tokens** to your Claude usage.
@@ -35,6 +36,23 @@ Restart Claude Code and type `/devsharp:next`. New here? Read the
 **[3-minute getting-started guide](docs/GETTING-STARTED.md)**.
 
 ---
+
+## When cards appear
+
+| Moment | What you see |
+|--------|--------------|
+| You send a prompt (the wait begins) | A card, if one is due (every 3 prompts / 10 min on `medium`) |
+| Claude is still working after 3 minutes | A new card every 3 minutes (`mid_run_interval`), so a 2-hour agent run keeps teaching you |
+| Claude finishes | Nothing extra. The card you read while waiting was already complete |
+
+Every card shows the **whole lesson at once**: for question cards, the answer is
+right below the question. Prefer to guess first? `/devsharp:config set reveal next-turn`
+hides answers until Claude finishes. Prefer the old style of one card after each turn?
+Run `/devsharp:config set card_timing after`.
+
+Verified on Claude Code 2.1.284: messages from the prompt-submit and after-tool-call
+hooks are shown to you and, like the end-of-turn ones, are not visible to Claude
+(resume test: `NOTFOUND`). On the tool-call path the hook costs ~5 ms over Node start-up.
 
 ## What it looks like
 

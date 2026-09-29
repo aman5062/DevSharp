@@ -70,8 +70,11 @@ function pickAndShow(ctx, state, sess, { mode = null } = {}) {
     if (prev) store.record(state, 'skipped', prev, ctx.now);
   }
   store.record(state, 'shown', pick.item, ctx.now);
+  // reveal "inline": the answer is on the card itself, nothing is left open.
+  const inline = ctx.config.reveal === 'inline' && hasAnswer(pick.item);
+  if (inline) store.record(state, 'revealed', pick.item, ctx.now, { auto: true });
   sess.sinceCard = 0;
-  sess.pending = { id: pick.item.id, turn: sess.turns, t: ctx.now, hasAnswer: hasAnswer(pick.item), revealed: false };
+  sess.pending = { id: pick.item.id, turn: sess.turns, t: ctx.now, hasAnswer: hasAnswer(pick.item), revealed: inline };
   return renderCard(pick.item, renderOpts(ctx.config, { revealHint: hasAnswer(pick.item) }));
 }
 
@@ -102,36 +105,109 @@ function onSessionStart(opts) {
   }
 }
 
-// Called when Claude finishes a turn. Returns card text or null.
-function onTurnEnd(opts) {
+// ---- timing -----------------------------------------------------------------
+// card_timing "during" (default): cards fill the time you spend WAITING for Claude.
+//   prompt submitted  -> a card (if due)          the wait begins
+//   long run          -> every mid_run_interval:  answer to the open question, then a new card
+//   Claude finished   -> the answer to any card still open
+// card_timing "after": the original behaviour, one card after Claude finishes a turn.
+
+const { midrunPath } = require('./midrun');
+const { readJson, writeJson } = require('./fsutil');
+
+function setMidrun(ctx, dueAt) {
+  const file = midrunPath(ctx.p);
+  const m = readJson(file, {});
+  const map = m && typeof m === 'object' && !Array.isArray(m) ? m : {};
+  for (const [k, v] of Object.entries(map)) if (!Number.isFinite(v) || ctx.now - v > 6 * 3600e3) delete map[k];
+  if (dueAt) map[ctx.sessionId] = dueAt; else delete map[ctx.sessionId];
+  try { writeJson(file, map); } catch { /* best effort */ }
+}
+
+function midInterval(config) {
+  return parseDuration(config.mid_run_interval) ?? 3 * 60e3;
+}
+
+function revealPending(ctx, state, sess, extra = {}) {
+  const pend = sess.pending;
+  if (!pend || !pend.hasAnswer || pend.revealed) return null;
+  const { items, ups } = catalogue(ctx, project(ctx));
+  const item = findItem(pend.id, items, ups);
+  pend.revealed = true;
+  if (!item) return null;
+  store.record(state, 'revealed', item, ctx.now, { auto: true });
+  return renderAnswer(item, renderOpts(ctx.config, { auto: true, ...extra }));
+}
+
+function active(config) {
+  return config.enabled && config.show_after_prompt && config.frequency !== 'off';
+}
+
+// A (non-command) prompt was submitted: the developer starts waiting.
+function onPromptSubmit(opts) {
   const ctx = ctxFrom(opts);
   const { config } = ctx;
-  if (!config.enabled || !config.show_after_prompt || config.frequency === 'off') return null;
+  if (!active(config) || config.card_timing !== 'during') return null;
   const state = store.loadState(ctx.p);
   const sess = store.session(state, ctx.sessionId, ctx.now);
   sess.turns += 1;
   sess.sinceCard += 1;
+  sess.turnStart = ctx.now;
   let out = null;
-
-  const pend = sess.pending;
-  if (ctx.now < state.snoozeUntil) {
-    // snoozed: stay completely silent
-  } else if (pend && pend.hasAnswer && !pend.revealed && config.reveal === 'next-turn' && sess.turns > pend.turn) {
-    const proj = project(ctx);
-    const { items, ups } = catalogue(ctx, proj);
-    const item = findItem(pend.id, items, ups);
-    pend.revealed = true;
-    if (item) {
-      store.record(state, 'revealed', item, ctx.now, { auto: true });
-      out = renderAnswer(item, renderOpts(config, { auto: true }));
-    }
-  } else {
+  if (ctx.now >= state.snoozeUntil) {
     const { turns, interval } = cadence(config);
-    // A brand-new user sees a card after their very first turn, even if they installed
-    // mid-session (SessionStart never ran, so the turn counter started from zero).
     const firstEver = !state.lastShownAt && Number.isFinite(turns);
     if (firstEver || (sess.sinceCard >= turns && ctx.now - state.lastShownAt >= interval)) {
       out = pickAndShow(ctx, state, sess);
+    }
+  }
+  store.saveState(ctx.p, state);
+  if (config.mid_run) setMidrun(ctx, ctx.now + midInterval(config));
+  return out;
+}
+
+// Called after a tool call while Claude is still working (only once the hook's
+// cheap due-time check has passed).
+function onMidRun(opts) {
+  const ctx = ctxFrom(opts);
+  const { config } = ctx;
+  if (!active(config) || config.card_timing !== 'during' || !config.mid_run) { setMidrun(ctx, 0); return null; }
+  const state = store.loadState(ctx.p);
+  const sess = store.session(state, ctx.sessionId, ctx.now);
+  let out = null;
+  if (ctx.now >= state.snoozeUntil) {
+    out = revealPending(ctx, state, sess, { still: true }) || pickAndShow(ctx, state, sess);
+  }
+  store.saveState(ctx.p, state);
+  setMidrun(ctx, ctx.now + midInterval(config));
+  return out;
+}
+
+// Claude finished the turn.
+function onTurnEnd(opts) {
+  const ctx = ctxFrom(opts);
+  const { config } = ctx;
+  if (config.card_timing === 'during') setMidrun(ctx, 0);
+  if (!active(config)) return null;
+  const state = store.loadState(ctx.p);
+  const sess = store.session(state, ctx.sessionId, ctx.now);
+  let out = null;
+  if (ctx.now < state.snoozeUntil) {
+    // snoozed: stay completely silent
+  } else if (config.card_timing === 'during') {
+    if (config.reveal === 'next-turn') out = revealPending(ctx, state, sess, { done: true });
+  } else {
+    sess.turns += 1;
+    sess.sinceCard += 1;
+    const pend = sess.pending;
+    if (pend && pend.hasAnswer && !pend.revealed && config.reveal === 'next-turn' && sess.turns > pend.turn) {
+      out = revealPending(ctx, state, sess);
+    } else {
+      const { turns, interval } = cadence(config);
+      const firstEver = !state.lastShownAt && Number.isFinite(turns);
+      if (firstEver || (sess.sinceCard >= turns && ctx.now - state.lastShownAt >= interval)) {
+        out = pickAndShow(ctx, state, sess);
+      }
     }
   }
   store.saveState(ctx.p, state);
@@ -155,6 +231,7 @@ function onSessionEnd(opts) {
   }
   store.pruneSessions(state, ctx.now);
   store.saveState(ctx.p, state);
+  setMidrun(ctx, 0);
   // Stop the background refresh only if this session started it and it is still running.
   if (refreshPid) {
     try { updates.stopBackgroundRefresh(ctx.p, refreshPid); } catch { /* ignore */ }
@@ -382,4 +459,4 @@ function runCommand(name, args = [], opts = {}) {
   }
 }
 
-module.exports = { onSessionStart, onTurnEnd, onSessionEnd, runCommand, COMMANDS, DEFAULTS, DESCRIPTIONS };
+module.exports = { onSessionStart, onPromptSubmit, onMidRun, onTurnEnd, onSessionEnd, runCommand, COMMANDS, DEFAULTS, DESCRIPTIONS };

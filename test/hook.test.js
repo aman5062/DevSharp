@@ -22,7 +22,7 @@ function run(event, input, env) {
 
 function setup(cfg = {}) {
   const t = tmpHome();
-  fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, ...cfg }));
+  fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, card_timing: 'after', reveal: 'next-turn', ...cfg }));
   return t;
 }
 
@@ -143,5 +143,87 @@ test('in-process handle(): SessionStart and SessionEnd never print (their stdout
     assert.equal(handle('session-start', { session_id: `s${i}`, cwd: PROJECT }, t.env), '');
     assert.equal(handle('session-end', { session_id: `s${i}`, cwd: PROJECT }, t.env), '');
   }
+  t.cleanup();
+});
+
+// ---- card_timing "during" (default): cards fill the time spent waiting ----------
+function during(cfg = {}) {
+  const t = tmpHome();
+  fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, mode: 'think', reveal: 'next-turn', ...cfg }));
+  return t;
+}
+
+test('during: card appears the moment a prompt is submitted; answer when Claude finishes', () => {
+  const t = during();
+  const base = { session_id: 'wait-1', cwd: PROJECT };
+  const now = Date.UTC(2026, 8, 29, 10);
+  const card = JSON.parse(handle('prompt', { ...base, prompt: 'refactor the auth module' }, t.env, now)).systemMessage;
+  assert.match(card, /THINK FIRST/);
+  assert.match(card, /when Claude finishes/);
+  const ans = JSON.parse(handle('stop', base, t.env, now + 30e3)).systemMessage;
+  assert.match(ans, /ANSWER .*Claude is done/);
+  t.cleanup();
+});
+
+test('during: a long run gets an answer, then a new card, every mid_run_interval', () => {
+  const t = during({ mid_run_interval: '3m' });
+  const base = { session_id: 'wait-2', cwd: PROJECT };
+  const t0 = Date.UTC(2026, 8, 29, 10);
+  assert.ok(handle('prompt', { ...base, prompt: 'migrate the whole codebase' }, t.env, t0));
+  assert.equal(handle('tool', base, t.env, t0 + 60e3), '', 'not due yet');
+  const a = JSON.parse(handle('tool', base, t.env, t0 + 181e3)).systemMessage;
+  assert.match(a, /ANSWER .*still working/);
+  assert.equal(handle('tool', base, t.env, t0 + 200e3), '');
+  const c = JSON.parse(handle('tool', base, t.env, t0 + 362e3)).systemMessage;
+  assert.match(c, /THINK FIRST/);
+  // 2 hours of tool calls every 20 s -> about 40 cards/answers, never more than one per interval.
+  let shown = 0;
+  for (let s = 400; s < 7200; s += 20) if (handle('tool', base, t.env, t0 + s * 1e3)) shown += 1;
+  assert.ok(shown >= 35 && shown <= 40, `shown ${shown}`);
+  handle('stop', base, t.env, t0 + 7200e3);
+  assert.equal(handle('tool', base, t.env, t0 + 7400e3), '', 'turn over: no mid-run cards');
+  t.cleanup();
+});
+
+test('during: mid_run false means no cards during tool calls', () => {
+  const t = during({ mid_run: false });
+  const base = { session_id: 'wait-3', cwd: PROJECT };
+  const t0 = Date.UTC(2026, 8, 29, 10);
+  handle('prompt', { ...base, prompt: 'go' }, t.env, t0);
+  for (let s = 0; s < 3600; s += 30) assert.equal(handle('tool', base, t.env, t0 + s * 1e3), '');
+  t.cleanup();
+});
+
+test('during: slash commands and empty prompts never trigger a waiting card', () => {
+  const t = during();
+  const base = { session_id: 'wait-4', cwd: PROJECT };
+  assert.equal(handle('prompt', { ...base, prompt: '   ' }, t.env), '');
+  assert.equal(JSON.parse(handle('prompt', { ...base, prompt: '/devsharp:stats' }, t.env)).decision, 'block');
+  t.cleanup();
+});
+
+test('during: the tool-call hook is cheap when nothing is due', () => {
+  const t = during();
+  const r = spawnSync(process.execPath, [HOOK, 'tool'], { input: '{"session_id":"none"}', env: t.env, encoding: 'utf8' });
+  assert.equal(r.status, 0);
+  assert.equal(r.stdout, '');
+  const loaded = spawnSync(process.execPath, ['-e', `process.env.DEVSHARP_HOME=${JSON.stringify(t.home)};require(${JSON.stringify(HOOK)}).handle('tool',{session_id:'none'});console.log(Object.keys(require.cache).some(k=>k.includes('engine.js')))`], { encoding: 'utf8' });
+  assert.equal(loaded.stdout.trim(), 'false', 'engine must not load on the fast path');
+  t.cleanup();
+});
+
+test('default: one card holds the whole lesson (question + answer), nothing to reveal', () => {
+  const t = tmpHome();
+  fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, mode: 'think', mid_run_interval: '3m' }));
+  const base = { session_id: 'inline-1', cwd: PROJECT };
+  const t0 = Date.UTC(2026, 8, 29, 10);
+  const card = JSON.parse(handle('prompt', { ...base, prompt: 'build the feature' }, t.env, t0)).systemMessage;
+  assert.match(card, /THINK FIRST/);
+  assert.match(card, /💡/);
+  assert.ok(!/\/devsharp:reveal/.test(card), 'no command needed');
+  // Mid-run brings a NEW full card (not a separate answer), and Stop adds nothing.
+  const next = JSON.parse(handle('tool', base, t.env, t0 + 181e3)).systemMessage;
+  assert.ok(!/ANSWER/.test(next) && /💡/.test(next));
+  assert.equal(handle('stop', base, t.env, t0 + 200e3), '');
   t.cleanup();
 });

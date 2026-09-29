@@ -29,9 +29,9 @@ function walk(dir) {
   });
 }
 
-test('hooks.json: only synchronous command hooks on the four lifecycle events', () => {
+test('hooks.json: only synchronous command hooks on the five lifecycle events', () => {
   const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, 'hooks', 'hooks.json'), 'utf8'));
-  assert.deepEqual(Object.keys(cfg.hooks).sort(), ['SessionEnd', 'SessionStart', 'Stop', 'UserPromptSubmit']);
+  assert.deepEqual(Object.keys(cfg.hooks).sort(), ['PostToolUse', 'SessionEnd', 'SessionStart', 'Stop', 'UserPromptSubmit']);
   for (const [event, groups] of Object.entries(cfg.hooks)) {
     for (const g of groups) {
       for (const h of g.hooks) {
@@ -159,9 +159,13 @@ test('hook output contract holds across many turns, commands and modes', () => {
       const j = JSON.parse(pOut);
       assert.deepEqual(Object.keys(j).sort(), ['decision', 'reason', 'suppressOriginalPrompt']);
       assert.equal(j.decision, 'block');
-    } else {
-      assert.equal(pOut, '', 'ordinary prompts must pass through untouched, with no added context');
+    } else if (pOut) {
+      // An ordinary prompt may get a card for the user to read while waiting, never context for Claude.
+      assert.deepEqual(Object.keys(JSON.parse(pOut)), ['systemMessage'], 'ordinary prompts: user-facing systemMessage only');
+      cards += 1;
     }
+    const tOut = handle('tool', base, t.env, now + 500);
+    if (tOut) { assert.deepEqual(Object.keys(JSON.parse(tOut)), ['systemMessage'], 'PostToolUse: user-facing systemMessage only'); cards += 1; }
     const sOut = handle('stop', base, t.env, now + 1000);
     if (sOut) {
       cards += 1;

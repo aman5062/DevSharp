@@ -173,7 +173,7 @@ test('callModel: talks to the CLI with isolation flags and parses its JSON (fake
 });
 
 test('display: AI cards are preferred once, labelled, and never repeat', () => {
-  const t = aiHome({ mode: 'think', frequency: 'high', minimum_interval: '0s' });
+  const t = aiHome({ mode: 'think', frequency: 'high', minimum_interval: '0s', card_timing: 'after', reveal: 'next-turn' });
   const p = paths(t.env);
   const c = ai.loadCache(p);
   c.cards.push({ id: 'ai-0123456789ab', type: 'think', topic: 'nodejs', difficulty: 'medium', title: 'Your new LRU cache', question: 'What happens to memory if keys are never evicted?', answer: 'It grows without bound.', tags: [], generatedAt: Date.now(), sourceName: '✨ AI (haiku) from uncommitted changes' });

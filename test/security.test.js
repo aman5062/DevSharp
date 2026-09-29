@@ -24,7 +24,7 @@ const CONTROL_BYTES = /[\u0000-\u0008\u000b-\u001f\u007f-\u009f\u202a-\u202e\u20
 
 function home(cfg) {
   const t = tmpHome();
-  fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ frequency: 'high', minimum_interval: '0s', ...cfg }));
+  fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ frequency: 'high', minimum_interval: '0s', card_timing: 'after', ...cfg }));
   return t;
 }
 

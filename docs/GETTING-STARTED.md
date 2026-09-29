@@ -98,8 +98,9 @@ You should see `Active: yes`. Then ask for your first card:
 
 ## 4. Everyday use: you don't have to do anything
 
-Just use Claude Code as usual. Every few turns, **after Claude finishes answering**,
-a card appears below the answer:
+Just use Claude Code as usual. **While you wait for Claude**, a card appears: right
+after you send a prompt, and every 3 minutes while Claude keeps working on a long task.
+Each card is a complete lesson, with the answer included, so there is nothing to type:
 
 ```text
 ╭─ 🧠 THINK FIRST · PostgreSQL
@@ -110,16 +111,15 @@ a card appears below the answer:
 │  mid-job. The queue delivers at least once. What should the job
 │  handler do so a redelivery is harmless?
 │
-│  💭 Think it through first. /devsharp:reveal shows the answer
-│  (or wait: it appears after your next turn).
+│  💡 Make the handler idempotent: store the job id with the
+│  charge in the same transaction and skip work when it exists.
 ╰─ PostgreSQL Documentation · https://www.postgresql.org/docs/
 ```
 
 What to do with it:
 
 - **Just read it.** That's the whole idea: 20 seconds of learning while Claude works.
-- **Think First / Why? cards hide the answer.** Take a guess, then type
-  `/devsharp:reveal`, or simply keep working and the answer shows up after your next turn.
+  You never need to type anything.
 - **Already knew it?** Type `/devsharp:known` and it won't come back.
 - **Not interested?** Type `/devsharp:dismiss`.
 

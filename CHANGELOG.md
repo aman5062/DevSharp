@@ -6,6 +6,23 @@ All notable changes to DevSharp are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-09-29
+
+### Changed
+
+- **Cards now fill the time you spend waiting.** A card appears when you submit a
+  prompt, and every `mid_run_interval` (default 3 minutes) during long Claude runs,
+  via the PostToolUse hook. The old end-of-turn style is `card_timing: after`.
+- **Every card is a complete lesson.** Answers are shown on the card itself
+  (`reveal: inline`, the new default), so there is nothing to type.
+  `reveal: next-turn` and `reveal: manual` keep the guess-first style.
+
+### Verified
+
+- Prompt-submit and after-tool-call `systemMessage` output is shown to the user and
+  is not in Claude's context (resume test, Claude Code 2.1.284).
+- The tool-call hook's fast path adds about 5 ms over Node start-up.
+
 ## [0.1.1] — 2026-09-29
 
 ### Fixed
