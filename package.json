@@ -5,13 +5,43 @@
   "license": "MIT",
   "author": "Aman (https://github.com/aman5062)",
   "homepage": "https://github.com/aman5062/DevSharp",
-  "repository": { "type": "git", "url": "git+https://github.com/aman5062/DevSharp.git" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aman5062/DevSharp.git"
+  },
   "bugs": "https://github.com/aman5062/DevSharp/issues",
-  "keywords": ["claude-code", "claude-code-plugin", "learning", "developer-education", "cli", "offline"],
-  "bin": { "devsharp": "cli/devsharp.js" },
+  "keywords": [
+    "claude-code",
+    "claude-code-plugin",
+    "learning",
+    "developer-education",
+    "cli",
+    "offline"
+  ],
+  "bin": {
+    "devsharp": "cli/devsharp.js"
+  },
   "main": "src/core/engine.js",
-  "engines": { "node": ">=18" },
-  "files": [".claude-plugin", "hooks", "commands", "cli", "src", "knowledge", "updates", "examples", "docs", "README.md", "LICENSE", "CHANGELOG.md", "SECURITY.md"],
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    ".claude-plugin",
+    "hooks",
+    "commands",
+    "cli",
+    "src",
+    "knowledge",
+    "updates",
+    "examples",
+    "docs",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "SECURITY.md",
+    "install.sh",
+    "install.ps1"
+  ],
   "scripts": {
     "test": "node --test",
     "validate": "node scripts/validate-packs.js",

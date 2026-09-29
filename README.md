@@ -19,6 +19,23 @@ Optionally, you can turn on [AI cards](#ai-cards-from-your-own-code-opt-in) that
 
 ---
 
+## Quick start
+
+**macOS / Linux:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/aman5062/DevSharp/main/install.sh | bash
+```
+**Windows (PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/aman5062/DevSharp/main/install.ps1 | iex
+```
+**Or inside Claude Code:** `/plugin marketplace add aman5062/DevSharp`, then `/plugin install devsharp@devsharp`.
+
+Restart Claude Code and type `/devsharp:next`. New here? Read the
+**[3-minute getting-started guide](docs/GETTING-STARTED.md)**.
+
+---
+
 ## What it looks like
 
 After Claude finishes a turn, DevSharp may print a card like this (Claude Code
