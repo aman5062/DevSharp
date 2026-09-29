@@ -314,3 +314,24 @@ bundled card.
   differences between terminals and survives re-wrapping on narrow windows.
 - **Data-only content.** Cards are validated JSON, never code, so community
   packs and feeds cannot execute anything.
+
+## Optional AI cards (`src/ai/`)
+
+```text
+Stop hook ──(ai on, under budget, interval elapsed)──► detached node src/ai/worker.js
+                                                          │  lock, count call first
+                                                          │  git diff (filtered, redacted, <=5 KB)
+                                                          │  + <=3 release-note excerpts (1 per project)
+                                                          ▼
+                                             claude -p --model haiku  (no tools/hooks/MCP,
+                                             MAX_THINKING_TOKENS=0, $0.05 cap, not persisted)
+                                                          │  JSON → validate → sanitise
+                                                          ▼
+                                              cache/ai.json  (cards TTL 7 d, notes)
+                                                          │
+Stop hook (later) ── selectCard: AI cards +35, shown once ─┘  → systemMessage (zero-token display)
+```
+
+Disabling thinking was measured to cut a diff-based call from 34 s / $0.019 to
+about 10 s / $0.005. `--bare` is not used because it disables OAuth, which would
+lock out subscription logins.

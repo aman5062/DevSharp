@@ -13,7 +13,10 @@
 //   * Never `async: true` hooks: an async hook's systemMessage IS delivered to Claude.
 //   * Any failure exits 0 silently (details to stderr = debug log only).
 
-const engine = require('../core/engine');
+// Loaded lazily: an ordinary prompt only needs the regex check below, so it pays for
+// Node start-up and nothing else before Claude starts working.
+let engineModule = null;
+const engine = () => engineModule || (engineModule = require('../core/engine'));
 
 const MAX_INPUT = 1024 * 1024;
 const COMMAND_RE = /^\s*\/devsharp:([a-z-]{1,20})(?:\s+([\s\S]*))?$/;
@@ -43,27 +46,29 @@ function parse(raw) {
 
 // Pure function: hook event + input -> stdout string ('' for none). Exported for tests.
 function handle(event, input, env = process.env, now = Date.now()) {
+  // Set by DevSharp's own background model call, so its child process never re-enters DevSharp.
+  if (env.DEVSHARP_DISABLE === '1') return '';
   const cwd = typeof input.cwd === 'string' && input.cwd ? input.cwd : env.CLAUDE_PROJECT_DIR || process.cwd();
   const opts = { env, now, cwd, sessionId: typeof input.session_id === 'string' ? input.session_id : 'unknown' };
   switch (event) {
     case 'session-start':
-      engine.onSessionStart(opts);
+      engine().onSessionStart(opts);
       return '';
     case 'prompt': {
       const m = COMMAND_RE.exec(typeof input.prompt === 'string' ? input.prompt : '');
       if (!m) return '';
       const args = (m[2] || '').trim().split(/\s+/).filter(Boolean).slice(0, 10);
-      const { text } = engine.runCommand(m[1], args, opts);
+      const { text } = engine().runCommand(m[1], args, opts);
       return JSON.stringify({ decision: 'block', reason: `\n${text}`, suppressOriginalPrompt: true });
     }
     case 'stop': {
       if (input.stop_hook_active) return '';
-      const text = engine.onTurnEnd(opts);
+      const text = engine().onTurnEnd(opts);
       // Leading newline: Claude Code prefixes the message with "Stop says:"; keep the card's header on its own line.
       return text ? JSON.stringify({ systemMessage: `\n${text}` }) : '';
     }
     case 'session-end':
-      engine.onSessionEnd(opts);
+      engine().onSessionEnd(opts);
       return '';
     default:
       return '';

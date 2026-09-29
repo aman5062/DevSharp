@@ -126,3 +126,22 @@ the card's text anywhere in its context.
   installation.
 - The content of third-party feeds beyond what is displayed: headlines are
   shown as-is with a link; opening the link is your choice.
+
+## Optional AI cards: data egress
+
+With `ai` off (the default), DevSharp sends nothing to any model. With `ai` on:
+
+- **What is sent.** Changed diff hunks, capped at 5 KB, go to the model through the
+  user's own `claude` CLI login, the same provider their code already goes to.
+  `.env*`, keys and certificates, lockfiles, generated, minified and vendored files,
+  and binaries are excluded. Secret-looking values are redacted before sending
+  (`src/ai/diff.js`, tested in `test/ai.test.js`).
+- **Isolation.** The call is a separate `claude -p` process run with
+  `--tools ""`, `--setting-sources ""`, `disableAllHooks`, `--strict-mcp-config`,
+  `--no-session-persistence` and `--max-budget-usd 0.05`, plus `DEVSHARP_DISABLE=1`
+  to prevent recursion. The model can take no actions.
+- **Untrusted input.** The diff and feed excerpts are fenced and labelled
+  untrusted in the prompt.
+- **Untrusted output.** The reply is parsed as JSON, validated against the card
+  schema, sanitised, and only ever displayed. It never reaches the user's Claude
+  conversation.

@@ -157,7 +157,22 @@ function parseDate(s) {
   return Number.isFinite(ms) ? ms : null;
 }
 
-function makeItem(source, rawTitle, rawLink, published) {
+const SUMMARY_MAX = 600;
+
+// Plain-text excerpt of release notes / post body. Kept short: it is only used as
+// input for optional AI notes, never executed, and always sanitised again on display.
+function toSummary(text) {
+  if (typeof text !== 'string' || !text) return '';
+  const s = text.slice(0, FIELD_CAP)
+    .replace(/<\/?[a-zA-Z][^<>]{0,200}>/g, ' ')
+    .replace(/!?\[([^\]\n]{0,200})\]\([^)\n]{0,500}\)/g, '$1') // markdown links/images -> text
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/[`*_>|]+/g, ' ')
+    .replace(/\s+/g, ' ');
+  return cleanText(s, { maxLen: SUMMARY_MAX, multiline: false });
+}
+
+function makeItem(source, rawTitle, rawLink, published, rawSummary = '') {
   const title = cleanText(rawTitle, { maxLen: 160, multiline: false });
   const url = cleanUrl(typeof rawLink === 'string' ? rawLink : '', { allowHosts: sourceAllowHosts(source) });
   if (!title || !url) return null;
@@ -170,6 +185,7 @@ function makeItem(source, rawTitle, rawLink, published) {
     title,
     url,
     published: Number.isFinite(published) ? published : null,
+    summary: toSummary(rawSummary),
   };
 }
 
@@ -214,7 +230,12 @@ function parseFeed(xmlString, source) {
         if (published !== null) break;
       }
     }
-    const item = makeItem(source, title, link.slice(0, 2048), published);
+    let summary = '';
+    for (const field of ['description', 'summary', 'content']) {
+      const d = firstElement(block, blockLower, field);
+      if (d) { summary = htmlToText(xmlText(d.body)); if (summary.trim()) break; }
+    }
+    const item = makeItem(source, title, link.slice(0, 2048), published, summary);
     if (item && !seen.has(item.id)) {
       seen.add(item.id);
       items.push(item);
@@ -235,7 +256,7 @@ function parseGithubReleases(jsonString, source) {
     if (!r || typeof r !== 'object' || r.draft === true || r.prerelease === true) continue;
     const title = typeof r.name === 'string' && r.name.trim() ? r.name : typeof r.tag_name === 'string' ? r.tag_name : '';
     const published = parseDate(typeof r.published_at === 'string' ? r.published_at : r.created_at);
-    const item = makeItem(source, title, r.html_url, published);
+    const item = makeItem(source, title, r.html_url, published, typeof r.body === 'string' ? r.body : '');
     if (item && !seen.has(item.id)) {
       seen.add(item.id);
       items.push(item);
@@ -244,4 +265,4 @@ function parseGithubReleases(jsonString, source) {
   return items;
 }
 
-module.exports = { parseFeed, parseGithubReleases, sourceAllowHosts, decodeEntities, xmlText, MAX_INPUT, MAX_ITEMS };
+module.exports = { parseFeed, parseGithubReleases, toSummary, sourceAllowHosts, decodeEntities, xmlText, MAX_INPUT, MAX_ITEMS };

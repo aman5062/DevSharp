@@ -1,5 +1,6 @@
 'use strict';
-// Architecture test: DevSharp must never cause an additional model request.
+// Architecture test: DevSharp's core never causes a model request, and the optional
+// AI-cards feature (config `ai`, off by default) is fenced into src/ai/.
 //
 // How Claude Code could be made to spend tokens by a hook, and how each is ruled out:
 //  1. stdout / additionalContext on SessionStart or UserPromptSubmit is injected into
@@ -9,7 +10,8 @@
 //  3. async hooks deliver systemMessage/additionalContext to Claude on the next turn
 //                                  -> hooks.json has no async / asyncRewake.
 //  4. prompt / agent hook types run a model -> only `command` hooks.
-//  5. Calling a model API directly  -> no model hosts, SDKs or CLIs referenced anywhere in src/.
+//  5. Calling a model directly      -> no model hosts or SDKs anywhere; the `claude` CLI only
+//                                     from src/ai/index.js, only when `ai` is enabled.
 // The end-to-end check against a real Claude Code binary is scripts/verify-zero-tokens.sh.
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -46,20 +48,92 @@ test('source: no model APIs, SDKs, CLIs or subagents referenced', () => {
     /generativelanguage\.googleapis/i, /bedrock-runtime/i, /\bclaude\s+-p\b/, /spawn\w*\(\s*['"]claude['"]/,
     /exec\w*\(\s*['"]claude/, /ANTHROPIC_API_KEY/, /\/v1\/messages/,
   ];
+  const cliOnly = [/\bclaude\s+-p\b/, /spawn\w*\(\s*['"]claude['"]/, /exec\w*\(\s*['"]claude/];
   for (const file of walk(path.join(ROOT, 'src')).concat(walk(path.join(ROOT, 'cli')))) {
+    const rel = path.relative(ROOT, file).replace(/\\/g, '/');
     const src = fs.readFileSync(file, 'utf8');
-    for (const re of forbidden) assert.ok(!re.test(src), `${path.relative(ROOT, file)} matches ${re}`);
+    for (const re of forbidden) {
+      if (rel === 'src/ai/index.js' && cliOnly.some((c) => String(c) === String(re))) continue;
+      assert.ok(!re.test(src), `${rel} matches ${re}`);
+    }
   }
 });
 
-test('source: child processes only re-launch node on our own refresh script', () => {
+test('source: child processes are limited to known, shell-free call sites', () => {
+  const allowed = new Set(['src/updates/index.js', 'src/ai/index.js', 'src/ai/diff.js']);
   for (const file of walk(path.join(ROOT, 'src'))) {
+    const rel = path.relative(ROOT, file).replace(/\\/g, '/');
     const src = fs.readFileSync(file, 'utf8');
     if (!/child_process/.test(src)) continue;
-    assert.equal(path.relative(ROOT, file).replace(/\\/g, '/'), 'src/updates/index.js', `unexpected child_process in ${file}`);
-    assert.ok(/process\.execPath/.test(src), 'must spawn node itself');
-    assert.ok(!/shell:\s*true/.test(src), 'no shell');
-    assert.ok(!/\bexec(Sync)?\(/.test(src), 'no exec');
+    assert.ok(allowed.has(rel), `unexpected child_process in ${rel}`);
+    assert.ok(!/shell:\s*true/.test(src), `${rel}: no shell`);
+    assert.ok(!/(?<![.\w])exec(Sync)?\(|child_process'\)\.exec\b|\{[^}]*\bexec\b[^}]*\}\s*=\s*require\('child_process'\)/.test(src), `${rel}: no shell exec`);
+  }
+});
+
+test('ai: off by default, and nothing can start a model call while it is off', () => {
+  const t = tmpHome();
+  const ai = require('../src/ai');
+  assert.equal(require('../src/core/config').DEFAULTS.ai, false);
+  const orig = ai.spawnWorker;
+  let spawned = 0;
+  ai.spawnWorker = () => { spawned += 1; return 1; };
+  try {
+    fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, frequency: 'high', minimum_interval: '0s' }));
+    const base = { session_id: 'ai-off', cwd: ROOT };
+    handle('session-start', base, t.env);
+    for (let i = 0; i < 10; i += 1) handle('stop', base, t.env, Date.now() + i * 3600e3);
+    const j = JSON.parse(handle('prompt', { ...base, prompt: '/devsharp:ai now' }, t.env));
+    assert.match(j.reason, /off/);
+    assert.equal(spawned, 0);
+  } finally {
+    ai.spawnWorker = orig;
+    t.cleanup();
+  }
+});
+
+test('ai: when on, generation is rate-limited by interval', () => {
+  const t = tmpHome();
+  const ai = require('../src/ai');
+  const orig = ai.spawnWorker;
+  let spawned = 0;
+  ai.spawnWorker = () => { spawned += 1; return 4242; };
+  try {
+    fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, ai: true, ai_min_interval: '10m' }));
+    const base = { session_id: 'ai-on', cwd: ROOT };
+    const t0 = Date.UTC(2026, 8, 29, 9);
+    handle('stop', base, t.env, t0);
+    assert.equal(spawned, 1);
+    // The fake worker never records a run, so simulate what the real worker writes.
+    const p = require('../src/core/paths').paths(t.env);
+    const c = ai.loadCache(p);
+    Object.assign(c, { day: require('../src/core/store').dayKey(t0), count: 1, lastRunAt: t0 });
+    ai.saveCache(p, c);
+    handle('stop', base, t.env, t0 + 60e3);
+    assert.equal(spawned, 1, 'no second call within ai_min_interval');
+    handle('stop', base, t.env, t0 + 11 * 60e3);
+    assert.equal(spawned, 2);
+  } finally {
+    ai.spawnWorker = orig;
+    t.cleanup();
+  }
+});
+
+test('ai: the model call is isolated from the user\'s session', () => {
+  const args = require('../src/ai').claudeArgs('haiku');
+  const val = (flag) => args[args.indexOf(flag) + 1];
+  assert.equal(args[0], '-p');
+  assert.equal(val('--tools'), '', 'no tools');
+  assert.equal(val('--setting-sources'), '', 'no user/project settings, plugins or hooks');
+  assert.deepEqual(JSON.parse(val('--settings')), { disableAllHooks: true });
+  for (const f of ['--strict-mcp-config', '--disable-slash-commands', '--no-session-persistence', '--system-prompt', '--max-budget-usd']) assert.ok(args.includes(f), f);
+  assert.ok(Number(val('--max-budget-usd')) <= 0.05);
+});
+
+test('DEVSHARP_DISABLE makes every hook inert (no recursion from the AI child process)', () => {
+  const env = { ...process.env, DEVSHARP_DISABLE: '1' };
+  for (const ev of ['session-start', 'prompt', 'stop', 'session-end']) {
+    assert.equal(handle(ev, { session_id: 'x', prompt: '/devsharp:next' }, env), '');
   }
 });
 

@@ -12,6 +12,7 @@ const { renderCard, renderAnswer, renderNotice, hasAnswer } = require('./render'
 const { computeStats, formatStats, prettyCat } = require('./stats');
 const updates = require('../updates');
 const { detectCached } = require('./detect');
+const ai = require('../ai');
 
 function ctxFrom(opts = {}) {
   const p = opts.paths || getPaths(opts.env || process.env);
@@ -30,12 +31,20 @@ function project(ctx) {
 
 function catalogue(ctx, proj) {
   const want = proj.topics.concat(Array.isArray(ctx.config.topics) ? ctx.config.topics : []);
-  const items = loadKnowledge(ctx.p, { wantTopics: want, seed: store.dayKey(ctx.now) });
+  let items = loadKnowledge(ctx.p, { wantTopics: want, seed: store.dayKey(ctx.now) });
   let ups = [];
+  let notes = null;
   if (ctx.config.updates) {
     try { ups = updates.loadUpdates(ctx.p); } catch { ups = []; }
   }
-  return { items, ups };
+  if (ctx.config.ai) {
+    try {
+      const names = new Map(items.map((i) => [i.topic, i.topicName]));
+      items = items.concat(ai.loadAiCards(ctx.p, ctx.now).map((c) => ({ ...c, topicName: names.get(c.topic) || c.topicName })));
+      notes = ai.loadNotes(ctx.p);
+    } catch { /* AI cache problems never block static cards */ }
+  }
+  return { items, ups, notes };
 }
 
 function findItem(id, items, ups) {
@@ -49,10 +58,10 @@ const renderOpts = (config, extra = {}) => ({ style: config.card_style, width: c
 
 function pickAndShow(ctx, state, sess, { mode = null } = {}) {
   const proj = project(ctx);
-  const { items, ups } = catalogue(ctx, proj);
+  const { items, ups, notes } = catalogue(ctx, proj);
   const seed = `${ctx.sessionId}|${store.dayKey(ctx.now)}|${state.events.length}`;
   const pick = selectCard({
-    items, updates: ups, state, config: ctx.config, projectTopics: proj.techs, now: ctx.now, seed, mode,
+    items, updates: ups, notes, state, config: ctx.config, projectTopics: proj.techs, now: ctx.now, seed, mode,
   });
   if (!pick) return null;
   // Leaving an unanswered question behind counts as "skipped".
@@ -123,6 +132,10 @@ function onTurnEnd(opts) {
     }
   }
   store.saveState(ctx.p, state);
+  if (config.ai) {
+    // Opt-in: maybe start ONE budgeted background generation about what just changed.
+    try { ai.maybeSchedule({ ...ctx, topics: project(ctx).topics }); } catch { /* never block the turn */ }
+  }
   return out;
 }
 
@@ -160,6 +173,7 @@ const COMMANDS = {
   enable: 'Turn DevSharp on',
   disable: 'Turn DevSharp off',
   update: 'Refresh technology-update feeds now',
+  ai: 'Opt-in AI cards from your recent code changes  [on|off|now]',
   reset: 'Erase learning history (config is kept)  — requires "confirm"',
   help: 'This list',
 };
@@ -319,6 +333,34 @@ function runCommand(name, args = [], opts = {}) {
       }
       const pid = updates.spawnBackgroundRefresh(p);
       return note('Updating', [pid ? 'Refreshing feeds in the background (a few seconds). New headlines appear in upcoming cards.' : 'A refresh is already running.']);
+    }
+    case 'ai': {
+      const sub = args[0];
+      if (sub === 'on' || sub === 'off') {
+        saveConfigValue(p, 'ai', sub === 'on');
+        return note(sub === 'on' ? 'AI cards on' : 'AI cards off', sub === 'on' ? [
+          `After a turn DevSharp may ask ${config.ai_model} (through your claude CLI login) for cards about`,
+          'your latest git changes, in a separate background call that never touches this conversation.',
+          `Budget: at most ${config.ai_daily_limit} calls/day, one per ${config.ai_min_interval}. Typically ~3k input + ~0.5k output tokens per call (~$0.005 at Haiku list price).`,
+          'Secrets, .env, keys and lockfiles are never sent; secret-looking values are redacted.',
+        ] : ['DevSharp is back to zero model usage.']);
+      }
+      if (sub === 'now') {
+        if (!config.ai) return note('AI cards are off', ['Turn on with: /devsharp:ai on']);
+        const r = ai.maybeSchedule({ ...ctx, topics: project(ctx).topics }, { force: true });
+        return note('AI cards', [r.started ? 'Generating in the background; the card shows up after a coming turn (or /devsharp:next).' : `Not started: ${r.why}.`]);
+      }
+      const b = ai.budgetState(p, config, now);
+      return note('AI cards', [
+        `Enabled:           ${config.ai ? 'yes' : 'no (/devsharp:ai on)'}`,
+        `Model:             ${config.ai_model} via your claude CLI login`,
+        `Used today:        ${b.used} of ${b.limit} calls`,
+        `Last run:          ${fmtAgo(b.lastRunAt, now)}${b.lastCost ? ` (~$${b.lastCost.toFixed(4)} at list price)` : ''}`,
+        `Cards waiting:     ${b.pending}`,
+        ...(b.lastError ? [`Last error:        ${b.lastError}`] : []),
+        '',
+        'Card display stays zero-token; only generation uses the model, in a separate call.',
+      ]);
     }
     case 'reset': {
       if (args[0] !== 'confirm' && args[0] !== '--yes') {

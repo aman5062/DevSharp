@@ -118,12 +118,18 @@ function scoreItem(it, ctx) {
   const inRecent = recent.slice(0, 6).filter((e) => e.topic === it.topic).length;
   score -= Math.min(12 * inRecent, 30);
   if (it.custom) score += 5;
+  if (it.ai && (!st || !st.shown)) {
+    // Freshly generated from the developer's own recent code: the most relevant card there is.
+    score += 35;
+    reasons.push('about your recent changes');
+  }
   score += hash32(`${seed}|${it.id}`) % 8; // deterministic tie-break
   return { score, reasons };
 }
 
-function updateToItem(u, topicCategory) {
+function updateToItem(u, topicCategory, notes) {
   return {
+    note: notes && notes.get(u.id) ? notes.get(u.id) : '',
     id: u.id, type: 'update', topic: u.topic, category: topicCategory.get(u.topic) || 'updates',
     topicName: u.name || u.topic, difficulty: 'medium', title: u.title, url: u.url,
     published: u.published || null, source: { name: u.name, url: u.url }, tags: [],
@@ -131,14 +137,15 @@ function updateToItem(u, topicCategory) {
 }
 
 // Returns { item, mode, score, reasons } or null when nothing is eligible.
-function selectCard({ items, updates = [], state, config, projectTopics = [], now = Date.now(), seed = '', mode = null }) {
+function selectCard({ items, updates = [], notes = null, state, config, projectTopics = [], now = Date.now(), seed = '', mode = null }) {
   const allowed = interestFilter(config);
   const topicCategory = new Map(items.map((it) => [it.topic, it.category]));
   const pool = { fact: [], think: [], concept: [], why: [], update: [] };
   for (const it of items) {
     const st = state.items[it.id];
     if (st && (st.dismissed || st.known)) continue;
-    if (!allowed(it)) continue;
+    if (it.ai && st && st.shown) continue; // AI cards are one-off
+    if (!it.ai && !allowed(it)) continue;
     pool[it.type].push(it);
   }
   if (config.updates) {
@@ -146,7 +153,7 @@ function selectCard({ items, updates = [], state, config, projectTopics = [], no
       const st = state.items[u.id];
       if (st && st.shown) continue; // headlines are shown once
       if (u.published && now - u.published > UPDATE_MAX_AGE) continue;
-      const it = updateToItem(u, topicCategory);
+      const it = updateToItem(u, topicCategory, notes);
       if (allowed(it)) pool.update.push(it);
     }
   }

@@ -35,6 +35,10 @@ const DEFAULTS = Object.freeze({
   card_style: 'rail',
   card_width: 64,
   telemetry: false,
+  ai: false,
+  ai_model: 'haiku',
+  ai_daily_limit: 25,
+  ai_min_interval: '10m',
 });
 
 const DESCRIPTIONS = {
@@ -53,6 +57,10 @@ const DESCRIPTIONS = {
   card_style: 'rail | box | plain',
   card_width: 'Card width in columns (40-100)',
   telemetry: 'Always false. DevSharp has no telemetry.',
+  ai: 'Opt-in AI cards about your recent code changes + headline notes (uses a small model via your claude CLI login)',
+  ai_model: 'Model alias for AI cards (haiku, sonnet, ...)',
+  ai_daily_limit: 'Maximum AI generations per day (1-100)',
+  ai_min_interval: 'Minimum time between AI generations, e.g. 10m',
 };
 
 function parseDuration(v) {
@@ -72,7 +80,7 @@ const bool = (v) => (v === true || v === 'true' || v === 'yes' || v === 'on' || 
 // Returns the normalised value, or undefined if invalid.
 function coerce(key, v) {
   switch (key) {
-    case 'enabled': case 'show_after_prompt': case 'updates': case 'think_first': case 'project_awareness':
+    case 'enabled': case 'ai': case 'show_after_prompt': case 'updates': case 'think_first': case 'project_awareness':
       return bool(v);
     case 'telemetry':
       return bool(v) === false ? false : undefined; // cannot be enabled: nothing to send
@@ -86,6 +94,16 @@ function coerce(key, v) {
       return ['next-turn', 'manual'].includes(v) ? v : undefined;
     case 'card_style':
       return ['rail', 'box', 'plain'].includes(v) ? v : undefined;
+    case 'ai_model':
+      return typeof v === 'string' && /^[a-z0-9][a-z0-9.-]{1,59}$/i.test(v.trim()) ? v.trim() : undefined;
+    case 'ai_daily_limit': {
+      const n = Number(v);
+      return Number.isInteger(n) && n >= 1 && n <= 100 ? n : undefined;
+    }
+    case 'ai_min_interval': {
+      const ms = parseDuration(v);
+      return ms !== null && ms >= 60e3 ? String(v).trim() : undefined;
+    }
     case 'minimum_interval':
       if (v === 'auto') return 'auto';
       return parseDuration(v) !== null ? (typeof v === 'number' ? `${v}m` : String(v).trim()) : undefined;

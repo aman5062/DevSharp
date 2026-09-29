@@ -101,7 +101,7 @@ function fmtDate(ms) {
 function renderCard(item, opts = {}) {
   const { revealHint = true, reveal = 'next-turn' } = opts;
   const [icon, label] = HEADERS[item.type] || HEADERS.fact;
-  const header = `${icon} ${label} · ${item.topicName || item.topic}`;
+  const header = `${icon} ${label} · ${item.topicName || item.topic}${item.ai ? ' · ✨ from your code' : ''}`;
   const later = reveal === 'next-turn' ? ' (or wait: it appears after your next turn)' : '';
   const blocks = [];
   switch (item.type) {
@@ -115,7 +115,8 @@ function renderCard(item, opts = {}) {
       break;
     case 'update':
       blocks.push(item.title, [fmtDate(item.published), item.url].filter(Boolean).join(' · '));
-      blocks.push('Headline from a public feed, shown as-is. DevSharp never summarises with AI.');
+      if (item.note) blocks.push(`✨ In short: ${item.note}`);
+      blocks.push(item.note ? 'Headline from a public feed; the note above is AI-generated.' : 'Headline from a public feed, shown as-is.');
       break;
     case 'concept':
     case 'fact':
@@ -125,7 +126,8 @@ function renderCard(item, opts = {}) {
         blocks.push(`💡 Think: ${item.question}${revealHint ? ` (/devsharp:reveal${later ? ' or next turn' : ''})` : ''}`);
       }
   }
-  const footer = item.type === 'update' ? `Source: ${item.source && item.source.name ? item.source.name : item.topic}` : sourceLine(item);
+  let footer = item.type === 'update' ? `Source: ${item.source && item.source.name ? item.source.name : item.topic}` : sourceLine(item);
+  if (item.ai) footer = `${footer} · verify`;
   return frame(header, blocks, footer, opts);
 }
 
@@ -136,7 +138,7 @@ function hasAnswer(item) {
 // The answer to a Think First / Why / "Think:" prompt.
 function renderAnswer(item, opts = {}) {
   const [icon, label] = HEADERS.answer;
-  const header = `${icon} ${label} · ${item.topicName || item.topic}`;
+  const header = `${icon} ${label} · ${item.topicName || item.topic}${item.ai ? ' · ✨ from your code' : ''}`;
   const blocks = [item.title];
   if (item.question) blocks.push(`Q: ${item.question}`);
   blocks.push(item.answer);

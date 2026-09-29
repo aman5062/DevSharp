@@ -205,3 +205,16 @@ Invalid entries are skipped. At most 50 sources are used. Run
 `/devsharp:update` (or `devsharp update` to see the result in the terminal) to
 fetch immediately. Headlines older than 45 days are not shown, and each
 headline is shown at most once.
+
+## AI cards (opt-in)
+
+| Key | Default | Meaning |
+|-----|---------|---------|
+| `ai` | `false` | Turn on AI cards about your recent code changes and release-note summaries |
+| `ai_model` | `haiku` | Model alias passed to `claude --model` |
+| `ai_daily_limit` | `25` | Maximum calls per local day (1 to 100). Failed calls count too |
+| `ai_min_interval` | `10m` | Minimum time between calls (at least `1m`) |
+
+Requires a logged-in `claude` CLI on `PATH`. On Windows, if the CLI is an npm
+`.cmd` shim, set `DEVSHARP_CLAUDE_BIN` to the full path of `claude.exe`.
+`/devsharp:ai` shows today's usage, the last call's cost and any error.

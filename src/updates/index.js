@@ -99,6 +99,7 @@ function validateItem(it) {
     title,
     url,
     published: Number.isFinite(it.published) ? it.published : null,
+    summary: cleanText(typeof it.summary === 'string' ? it.summary : '', { maxLen: 600, multiline: false }),
   };
 }
 

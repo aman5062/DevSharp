@@ -51,8 +51,11 @@ if (full) {
   const card = run.lines.find((l) => l.type === 'system' && typeof l.content === 'string' && /QUICK FACT|THINK FIRST|CONCEPT|WHY\?/.test(l.content));
   check(!!card, 'a learning card was displayed after the turn');
   if (card) {
-    const titleLine = card.content.split('\n').find((l) => /^│\s+\S/.test(l)) || '';
-    const needle = titleLine.replace(/^│\s+/, '').trim();
+    console.log(card.content.split('\n').slice(0, 5).map((l) => `      ${l}`).join('\n'));
+    // First non-empty body line of the card (its title), e.g. "│  Composite index order".
+    const body = card.content.split('\n').map((l) => l.replace(/^\s*Stop says:\s*/, '').replace(/^\s*[│╰╭]─?\s*/, '').trim()).filter((l) => l && !/^[⚡🧠📘❓📰💡]/.test(l));
+    const needle = body[0] || '';
+    if (needle.length < 8) { check(false, `could not extract card title from: ${JSON.stringify(card.content.slice(0, 200))}`); }
     const sid = run.result.session_id;
     const q = claude(['-p', `Search everything in your context window. Does the exact phrase "${needle.slice(0, 40)}" appear anywhere BEFORE this message (in any earlier message, reminder or hook output)? Reply exactly FOUND or NOTFOUND.`,
       '--resume', sid, '--plugin-dir', ROOT, '--output-format', 'json']).result;

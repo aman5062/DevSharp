@@ -44,3 +44,14 @@ First public release.
 
 [Unreleased]: https://github.com/aman5062/DevSharp/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/aman5062/DevSharp/releases/tag/v0.1.0
+
+### Added (0.1.0, same release)
+
+- Opt-in AI cards (`/devsharp:ai on`). After a turn, one budgeted background
+  `claude -p --model haiku` call runs with hooks, tools and MCP disabled and no
+  persisted session. It turns your filtered, redacted git diff into learning cards
+  and summarises real release-note excerpts. Measured cost is about $0.005 per call,
+  with defaults of 25 calls/day and at most one per 10 minutes.
+- Feed items keep a short plain-text release-notes excerpt; release candidates
+  are skipped; at most 20 items per source.
+- The hook loads its engine lazily, so ordinary prompts cost only Node start-up.

@@ -7,7 +7,8 @@ DevSharp is not another AI coding assistant. It is a small Claude Code plugin
 turns: a quick fact, a question to think about, a concept, a "why does it work
 like this?", or a headline from a project you depend on.
 
-It never calls a language model and adds **zero tokens** to your Claude usage.
+Its core never calls a language model and adds **zero tokens** to your Claude usage.
+Optionally, you can turn on [AI cards](#ai-cards-from-your-own-code-opt-in) that teach the concepts in *your own* latest edits, using a small, budgeted Haiku call that never touches your conversation.
 
 > **Think → Learn → Code.** While the AI writes the code, you keep the
 > understanding.
@@ -86,7 +87,7 @@ extra cost.
 - **Zero tokens.** Nothing DevSharp shows or does is sent to Claude.
 - **Offline-first.** Everything works without a network. Tech Update headlines
   are refreshed in the background when you are online.
-- **Private.** No telemetry, no accounts, nothing uploaded.
+- **Private.** No telemetry, no accounts. Nothing is uploaded unless you turn on AI cards, which send a filtered, redacted diff to the same Claude account you already code with.
 - **Quiet.** Medium frequency means at most one card every 3 turns and 10
   minutes. It can be snoozed, tuned or turned off.
 
@@ -118,6 +119,43 @@ The files in `commands/*.md` exist so Claude Code lists `/devsharp:*` in its
 command menu. Their bodies are only a fallback: if the hook is not running, the
 command text reaches Claude, which replies with a one-line "DevSharp hook is
 not active" message (see [Troubleshooting](docs/TROUBLESHOOTING.md)).
+
+## AI cards from your own code (opt-in)
+
+Static packs cannot know what *you* just wrote. Turn on AI cards and DevSharp also
+teaches the concepts behind your latest edits, and summarises real release notes
+for the technologies your project uses:
+
+```text
+/devsharp:ai on      # enable (off by default)
+/devsharp:ai         # status: calls used today, last cost, cards waiting
+/devsharp:ai now     # generate right away
+```
+
+How it works:
+
+- After a Claude turn, DevSharp may start **one background job**. It takes your
+  `git diff HEAD` (or the last commit if it is under 6 h old), filtered and
+  capped at 5 KB, plus up to three release-note excerpts from the feeds.
+- It sends them to a small model (`haiku` by default) through **your own
+  `claude` CLI login**, in a separate, non-persisted process: hooks disabled,
+  no tools, no MCP, a fixed system prompt, and a $0.05 cap per call.
+- The model's JSON reply is validated and sanitised, then cached. The card appears
+  later through the normal zero-token display, marked `✨ from your code`. Update
+  cards gain an `✨ In short:` line summarised **only from the real release notes**,
+  never guessed from a title.
+
+What gets sent: changed hunks only. `.env*`, keys and certificates, lockfiles,
+minified, vendored and generated files, and binaries are never included.
+Secret-looking values (AWS/GitHub/Slack/OpenAI-style keys, JWTs, passwords, URL
+credentials, long hex/base64 strings) are replaced with `<redacted>`.
+
+Measured cost (Claude Code 2.1.284, Haiku 4.5, thinking disabled): a diff-based
+call is ~2.7k input + ~0.5k output tokens, ~10 s in the background, **~$0.005 at
+list price**. A headlines-only call is ~$0.002. The default budget is 25 calls/day
+and at most one per 10 minutes (`ai_daily_limit`, `ai_min_interval`). A failed call
+still counts, so errors can never loop. Your conversation's context is untouched
+either way.
 
 ## Install
 
@@ -176,6 +214,7 @@ Inside Claude Code every command is `/devsharp:<name>`. In a terminal it is
 | `snooze [30m\|2h\|1d]` | Pause cards for a while (default 1h) |
 | `enable` / `disable` | Turn DevSharp on or off (enable also ends a snooze) |
 | `update` | Refresh technology-update feeds now |
+| `ai [on\|off\|now]` | Opt-in AI cards from your recent code changes; no argument shows status and budget |
 | `reset confirm` | Erase learning history (settings are kept) |
 | `help` | List the commands |
 | `doctor` *(CLI only)* | Check Node version, data directory, knowledge, config, plugin install and hook handler |
@@ -230,6 +269,10 @@ breaks a session.
 | `card_style` | `rail` | `rail`, `box`, `plain` |
 | `card_width` | `64` | 40 to 100 columns |
 | `telemetry` | `false` | Always false; it cannot be turned on |
+| `ai` | `false` | Opt-in AI cards (see above) |
+| `ai_model` | `haiku` | Model alias passed to `claude --model` |
+| `ai_daily_limit` | `25` | 1 to 100 calls per day |
+| `ai_min_interval` | `10m` | Minimum time between AI calls (>= 1m) |
 
 Full reference, custom knowledge packs and custom update sources:
 [docs/CONFIGURATION.md](docs/CONFIGURATION.md).
@@ -285,7 +328,35 @@ Honest notes about what a Claude Code plugin can and cannot do:
 
 ## Performance
 
-<!-- PERF -->
+Measured on Linux (AMD EPYC, Node 22), `npm run bench`, 30 runs each:
+
+| Hook | Wall p50 / p95 | CPU | Peak RSS |
+|------|----------------|-----|----------|
+| bare `node -e 0` (baseline) | 49 / 69 ms | n/a | n/a |
+| UserPromptSubmit, ordinary prompt | 55 / 84 ms | ~20 ms | 44 MB |
+| UserPromptSubmit, `/devsharp:stats` | 105 / 177 ms | ~50 ms | 57 MB |
+| Stop, card shown | 106 / 142 ms | ~50 ms | 56 MB |
+| SessionStart / SessionEnd | 84-96 / 111-137 ms | ~40 ms | 53 MB |
+
+- **Ordinary prompts pay only Node start-up.** The engine loads lazily, and only
+  for `/devsharp:*` commands.
+- **Idle cost is zero.** Hooks are short-lived processes, so nothing stays
+  resident between turns.
+- **Background work is bounded.** The feed refresh is a detached process that
+  exits within 25 s (about 1.5 s in practice), and the optional AI job is capped
+  at 2 minutes.
+- **Disk:** about 400 KB of knowledge. State is about 10 KB after 150 hook calls
+  and is capped at 3000 events.
+- **Network:** with `updates` on, about 14 small HTTPS GETs once every 24 h, and
+  none otherwise.
+
+End-to-end verification (`npm run verify:zero-tokens -- --full`) on Claude Code 2.1.284:
+
+- Every `/devsharp:*` command runs with 0 turns, $0 and 0 tokens.
+- A session's context is **23,984 tokens with and without the plugin**.
+- After a card is shown, a resumed session asked to find its title answers
+  `NOTFOUND`.
+
 
 ## Documentation
 
