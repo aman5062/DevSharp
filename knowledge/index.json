@@ -1,0 +1,553 @@
+{
+  "schema": 1,
+  "generatedAt": "2026-09-29T05:53:14.434Z",
+  "total": 272,
+  "packs": [
+    {
+      "file": "ai-ml/ai-ml.json",
+      "category": "ai-ml",
+      "topic": "ai-ml",
+      "name": "AI & ML",
+      "count": 6,
+      "types": {
+        "concept": 2,
+        "think": 2,
+        "fact": 1,
+        "why": 1
+      }
+    },
+    {
+      "file": "ai-ml/llm.json",
+      "category": "ai-ml",
+      "topic": "llm",
+      "name": "LLMs",
+      "count": 6,
+      "types": {
+        "fact": 1,
+        "concept": 1,
+        "think": 3,
+        "why": 1
+      }
+    },
+    {
+      "file": "backend/api-design.json",
+      "category": "backend",
+      "topic": "api-design",
+      "name": "API Design",
+      "count": 6,
+      "types": {
+        "think": 2,
+        "concept": 1,
+        "why": 1,
+        "fact": 2
+      }
+    },
+    {
+      "file": "backend/auth.json",
+      "category": "backend",
+      "topic": "auth",
+      "name": "Authentication",
+      "count": 6,
+      "types": {
+        "concept": 1,
+        "think": 2,
+        "fact": 2,
+        "why": 1
+      }
+    },
+    {
+      "file": "backend/http.json",
+      "category": "backend",
+      "topic": "http",
+      "name": "HTTP",
+      "count": 6,
+      "types": {
+        "concept": 1,
+        "think": 2,
+        "fact": 2,
+        "why": 1
+      }
+    },
+    {
+      "file": "backend/nodejs.json",
+      "category": "backend",
+      "topic": "nodejs",
+      "name": "Node.js",
+      "count": 8,
+      "types": {
+        "concept": 1,
+        "think": 3,
+        "fact": 2,
+        "why": 2
+      }
+    },
+    {
+      "file": "cloud/aws.json",
+      "category": "cloud",
+      "topic": "aws",
+      "name": "AWS",
+      "count": 6,
+      "types": {
+        "concept": 1,
+        "fact": 2,
+        "think": 2,
+        "why": 1
+      }
+    },
+    {
+      "file": "computer-science/algorithms.json",
+      "category": "computer-science",
+      "topic": "algorithms",
+      "name": "Algorithms",
+      "count": 6,
+      "types": {
+        "fact": 1,
+        "concept": 2,
+        "think": 2,
+        "why": 1
+      }
+    },
+    {
+      "file": "computer-science/concurrency.json",
+      "category": "computer-science",
+      "topic": "concurrency",
+      "name": "Concurrency",
+      "count": 6,
+      "types": {
+        "fact": 1,
+        "think": 2,
+        "concept": 2,
+        "why": 1
+      }
+    },
+    {
+      "file": "computer-science/data-structures.json",
+      "category": "computer-science",
+      "topic": "data-structures",
+      "name": "Data Structures",
+      "count": 6,
+      "types": {
+        "fact": 2,
+        "concept": 1,
+        "think": 2,
+        "why": 1
+      }
+    },
+    {
+      "file": "computer-science/memory.json",
+      "category": "computer-science",
+      "topic": "memory",
+      "name": "Memory & GC",
+      "count": 6,
+      "types": {
+        "fact": 1,
+        "concept": 2,
+        "think": 2,
+        "why": 1
+      }
+    },
+    {
+      "file": "databases/mongodb.json",
+      "category": "databases",
+      "topic": "mongodb",
+      "name": "MongoDB",
+      "count": 6,
+      "types": {
+        "concept": 1,
+        "think": 2,
+        "fact": 2,
+        "why": 1
+      }
+    },
+    {
+      "file": "databases/mysql.json",
+      "category": "databases",
+      "topic": "mysql",
+      "name": "MySQL",
+      "count": 6,
+      "types": {
+        "concept": 1,
+        "fact": 2,
+        "think": 2,
+        "why": 1
+      }
+    },
+    {
+      "file": "databases/postgresql.json",
+      "category": "databases",
+      "topic": "postgresql",
+      "name": "PostgreSQL",
+      "count": 8,
+      "types": {
+        "concept": 1,
+        "think": 3,
+        "fact": 2,
+        "why": 2
+      }
+    },
+    {
+      "file": "databases/prisma.json",
+      "category": "databases",
+      "topic": "prisma",
+      "name": "Prisma",
+      "count": 6,
+      "types": {
+        "think": 2,
+        "concept": 1,
+        "why": 1,
+        "fact": 2
+      }
+    },
+    {
+      "file": "databases/redis.json",
+      "category": "databases",
+      "topic": "redis",
+      "name": "Redis",
+      "count": 8,
+      "types": {
+        "concept": 1,
+        "think": 3,
+        "fact": 2,
+        "why": 2
+      }
+    },
+    {
+      "file": "databases/sql.json",
+      "category": "databases",
+      "topic": "sql",
+      "name": "SQL",
+      "count": 6,
+      "types": {
+        "think": 2,
+        "concept": 1,
+        "why": 1,
+        "fact": 2
+      }
+    },
+    {
+      "file": "databases/sqlite.json",
+      "category": "databases",
+      "topic": "sqlite",
+      "name": "SQLite",
+      "count": 6,
+      "types": {
+        "concept": 1,
+        "think": 2,
+        "fact": 2,
+        "why": 1
+      }
+    },
+    {
+      "file": "devops/ci-cd.json",
+      "category": "devops",
+      "topic": "ci-cd",
+      "name": "CI/CD",
+      "count": 6,
+      "types": {
+        "concept": 1,
+        "think": 2,
+        "why": 1,
+        "fact": 2
+      }
+    },
+    {
+      "file": "devops/docker.json",
+      "category": "devops",
+      "topic": "docker",
+      "name": "Docker",
+      "count": 8,
+      "types": {
+        "concept": 1,
+        "think": 3,
+        "why": 2,
+        "fact": 2
+      }
+    },
+    {
+      "file": "devops/git.json",
+      "category": "devops",
+      "topic": "git",
+      "name": "Git",
+      "count": 8,
+      "types": {
+        "concept": 1,
+        "think": 3,
+        "why": 2,
+        "fact": 2
+      }
+    },
+    {
+      "file": "devops/kubernetes.json",
+      "category": "devops",
+      "topic": "kubernetes",
+      "name": "Kubernetes",
+      "count": 6,
+      "types": {
+        "concept": 1,
+        "think": 2,
+        "why": 1,
+        "fact": 2
+      }
+    },
+    {
+      "file": "devops/linux.json",
+      "category": "devops",
+      "topic": "linux",
+      "name": "Linux",
+      "count": 6,
+      "types": {
+        "concept": 1,
+        "think": 2,
+        "fact": 2,
+        "why": 1
+      }
+    },
+    {
+      "file": "distributed-systems/distributed-systems.json",
+      "category": "distributed-systems",
+      "topic": "distributed-systems",
+      "name": "Distributed Systems",
+      "count": 7,
+      "types": {
+        "concept": 2,
+        "fact": 1,
+        "think": 2,
+        "why": 2
+      }
+    },
+    {
+      "file": "frontend/browser.json",
+      "category": "frontend",
+      "topic": "browser",
+      "name": "Browser",
+      "count": 6,
+      "types": {
+        "concept": 1,
+        "think": 2,
+        "why": 1,
+        "fact": 2
+      }
+    },
+    {
+      "file": "frontend/css.json",
+      "category": "frontend",
+      "topic": "css",
+      "name": "CSS",
+      "count": 6,
+      "types": {
+        "concept": 1,
+        "fact": 2,
+        "why": 1,
+        "think": 2
+      }
+    },
+    {
+      "file": "frontend/nextjs.json",
+      "category": "frontend",
+      "topic": "nextjs",
+      "name": "Next.js",
+      "count": 6,
+      "types": {
+        "concept": 1,
+        "why": 1,
+        "fact": 2,
+        "think": 2
+      }
+    },
+    {
+      "file": "frontend/react.json",
+      "category": "frontend",
+      "topic": "react",
+      "name": "React",
+      "count": 8,
+      "types": {
+        "concept": 1,
+        "think": 3,
+        "why": 2,
+        "fact": 2
+      }
+    },
+    {
+      "file": "languages/bash.json",
+      "category": "languages",
+      "topic": "bash",
+      "name": "Bash",
+      "count": 6,
+      "types": {
+        "think": 2,
+        "fact": 2,
+        "why": 1,
+        "concept": 1
+      }
+    },
+    {
+      "file": "languages/go.json",
+      "category": "languages",
+      "topic": "go",
+      "name": "Go",
+      "count": 6,
+      "types": {
+        "think": 2,
+        "concept": 1,
+        "why": 1,
+        "fact": 2
+      }
+    },
+    {
+      "file": "languages/java.json",
+      "category": "languages",
+      "topic": "java",
+      "name": "Java",
+      "count": 6,
+      "types": {
+        "fact": 1,
+        "concept": 1,
+        "think": 2,
+        "why": 2
+      }
+    },
+    {
+      "file": "languages/javascript.json",
+      "category": "languages",
+      "topic": "javascript",
+      "name": "JavaScript",
+      "count": 8,
+      "types": {
+        "think": 3,
+        "concept": 1,
+        "fact": 2,
+        "why": 2
+      }
+    },
+    {
+      "file": "languages/python.json",
+      "category": "languages",
+      "topic": "python",
+      "name": "Python",
+      "count": 8,
+      "types": {
+        "think": 3,
+        "concept": 1,
+        "why": 2,
+        "fact": 2
+      }
+    },
+    {
+      "file": "languages/rust.json",
+      "category": "languages",
+      "topic": "rust",
+      "name": "Rust",
+      "count": 6,
+      "types": {
+        "concept": 1,
+        "why": 1,
+        "think": 2,
+        "fact": 2
+      }
+    },
+    {
+      "file": "languages/typescript.json",
+      "category": "languages",
+      "topic": "typescript",
+      "name": "TypeScript",
+      "count": 8,
+      "types": {
+        "concept": 1,
+        "fact": 2,
+        "why": 2,
+        "think": 3
+      }
+    },
+    {
+      "file": "networking/dns.json",
+      "category": "networking",
+      "topic": "dns",
+      "name": "DNS",
+      "count": 6,
+      "types": {
+        "concept": 1,
+        "fact": 1,
+        "why": 1,
+        "think": 3
+      }
+    },
+    {
+      "file": "networking/tcp.json",
+      "category": "networking",
+      "topic": "tcp",
+      "name": "TCP",
+      "count": 6,
+      "types": {
+        "fact": 2,
+        "concept": 1,
+        "think": 2,
+        "why": 1
+      }
+    },
+    {
+      "file": "security/cryptography.json",
+      "category": "security",
+      "topic": "cryptography",
+      "name": "Cryptography",
+      "count": 6,
+      "types": {
+        "fact": 2,
+        "concept": 1,
+        "think": 2,
+        "why": 1
+      }
+    },
+    {
+      "file": "security/tls.json",
+      "category": "security",
+      "topic": "tls",
+      "name": "TLS",
+      "count": 6,
+      "types": {
+        "fact": 2,
+        "concept": 1,
+        "think": 2,
+        "why": 1
+      }
+    },
+    {
+      "file": "security/web-security.json",
+      "category": "security",
+      "topic": "web-security",
+      "name": "Web Security",
+      "count": 6,
+      "types": {
+        "concept": 2,
+        "think": 2,
+        "fact": 1,
+        "why": 1
+      }
+    },
+    {
+      "file": "system-design/caching.json",
+      "category": "system-design",
+      "topic": "caching",
+      "name": "Caching",
+      "count": 6,
+      "types": {
+        "concept": 1,
+        "think": 2,
+        "fact": 1,
+        "why": 2
+      }
+    },
+    {
+      "file": "system-design/system-design.json",
+      "category": "system-design",
+      "topic": "system-design",
+      "name": "System Design",
+      "count": 7,
+      "types": {
+        "concept": 2,
+        "fact": 1,
+        "think": 3,
+        "why": 1
+      }
+    }
+  ]
+}

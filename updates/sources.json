@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sources": [
+    { "id": "nodejs", "name": "Node.js", "topic": "nodejs", "type": "github-releases", "repo": "nodejs/node" },
+    { "id": "python", "name": "Python", "topic": "python", "type": "feed", "url": "https://blog.python.org/feeds/posts/default?alt=rss", "allow_hosts": ["pythoninsider.blogspot.com", "python.org"] },
+    { "id": "rust", "name": "Rust", "topic": "rust", "type": "feed", "url": "https://blog.rust-lang.org/feed.xml" },
+    { "id": "go", "name": "Go", "topic": "go", "type": "feed", "url": "https://go.dev/blog/feed.atom" },
+    { "id": "typescript", "name": "TypeScript", "topic": "typescript", "type": "github-releases", "repo": "microsoft/TypeScript" },
+    { "id": "react", "name": "React", "topic": "react", "type": "feed", "url": "https://react.dev/rss.xml" },
+    { "id": "nextjs", "name": "Next.js", "topic": "nextjs", "type": "feed", "url": "https://nextjs.org/feed.xml" },
+    { "id": "kubernetes", "name": "Kubernetes", "topic": "kubernetes", "type": "feed", "url": "https://kubernetes.io/feed.xml" },
+    { "id": "docker", "name": "Docker Engine (Moby)", "topic": "docker", "type": "github-releases", "repo": "moby/moby" },
+    { "id": "postgresql", "name": "PostgreSQL", "topic": "postgresql", "type": "feed", "url": "https://www.postgresql.org/news.rss" },
+    { "id": "redis", "name": "Redis", "topic": "redis", "type": "github-releases", "repo": "redis/redis" },
+    { "id": "linux", "name": "Linux kernel", "topic": "linux", "type": "feed", "url": "https://www.kernel.org/feeds/kdist.xml", "allow_hosts": ["kernel.org"] },
+    { "id": "pytorch", "name": "PyTorch", "topic": "ai-ml", "type": "github-releases", "repo": "pytorch/pytorch" },
+    { "id": "git", "name": "Git", "topic": "git", "type": "feed", "url": "https://github.com/git/git/tags.atom" }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "schema": 1,
+  "topic": "prisma",
+  "category": "databases",
+  "name": "Prisma",
+  "items": [
+    {
+      "id": "prisma-n-plus-one-include-001",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Awaiting queries in a loop",
+      "question": "Code loops over 100 posts and awaits prisma.user.findUnique for each author, one at a time. How do you reduce the queries?",
+      "answer": "Load the relation up front with findMany and include: { author: true } (or a nested select), so Prisma fetches authors in a batched query. Alternatively collect the author ids and query once with where: { id: { in: ids } }. Sequential awaits in a loop cannot be batched.",
+      "tags": [
+        "performance",
+        "relations"
+      ],
+      "source": {
+        "name": "Prisma docs - Relation queries",
+        "url": "https://www.prisma.io/docs/orm/prisma-client/queries/relation-queries"
+      }
+    },
+    {
+      "id": "prisma-migrate-dev-vs-deploy-002",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "migrate dev vs migrate deploy",
+      "body": "prisma migrate dev generates SQL migration files from schema changes and applies them to a development database, and may offer to reset it when it detects drift. prisma migrate deploy only applies committed, pending migrations and is what CI and production should run.",
+      "tags": [
+        "migrations",
+        "deploys"
+      ],
+      "source": {
+        "name": "Prisma docs - Development and production",
+        "url": "https://www.prisma.io/docs/orm/prisma-migrate/workflows/development-and-production"
+      }
+    },
+    {
+      "id": "prisma-raw-query-injection-003",
+      "type": "why",
+      "difficulty": "hard",
+      "title": "$queryRaw vs $queryRawUnsafe",
+      "question": "Why is prisma.$queryRaw with a tagged template safe from SQL injection while $queryRawUnsafe with string concatenation is not?",
+      "answer": "The tagged template sends interpolated values as bound parameters, separate from the SQL text. $queryRawUnsafe receives a finished string, so concatenated user input becomes SQL. Use the Prisma.sql helpers for dynamic fragments and never interpolate identifiers from user input.",
+      "tags": [
+        "security",
+        "sql-injection"
+      ],
+      "source": {
+        "name": "Prisma docs - Raw queries",
+        "url": "https://www.prisma.io/docs/orm/prisma-client/using-raw-sql/raw-queries"
+      }
+    },
+    {
+      "id": "prisma-serverless-connections-004",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Connection exhaustion on serverless",
+      "question": "A Prisma app on serverless functions exhausts PostgreSQL connections during traffic spikes. Why, and what helps?",
+      "answer": "Each function instance creates its own client and pool, so hundreds of concurrent instances each open connections. Instantiate the client once per instance outside the handler, keep the pool small, and put an external pooler such as PgBouncer in front of the database.",
+      "tags": [
+        "connections",
+        "serverless"
+      ],
+      "source": {
+        "name": "Prisma docs - Database connections",
+        "url": "https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/databases-connections"
+      }
+    },
+    {
+      "id": "prisma-transactions-005",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Two kinds of $transaction",
+      "body": "prisma.$transaction accepts either an array of queries run in one transaction or an async callback that receives a transaction client (an interactive transaction). Keep interactive transactions short: they hold a connection and locks and are subject to a timeout.",
+      "tags": [
+        "transactions"
+      ],
+      "source": {
+        "name": "Prisma docs - Transactions and batch queries",
+        "url": "https://www.prisma.io/docs/orm/prisma-client/queries/transactions"
+      }
+    },
+    {
+      "id": "prisma-select-fields-006",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Select only what you need",
+      "body": "By default a Prisma query returns every scalar field of the model. Using select to request only the needed fields reduces data transfer and keeps sensitive columns, such as password hashes, out of API responses.",
+      "tags": [
+        "performance",
+        "security"
+      ],
+      "source": {
+        "name": "Prisma docs - Select fields",
+        "url": "https://www.prisma.io/docs/orm/prisma-client/queries/select-fields"
+      }
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "schema": 1,
+  "topic": "typescript",
+  "category": "languages",
+  "name": "TypeScript",
+  "items": [
+    {
+      "id": "typescript-structural-typing-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Structural typing",
+      "body": "TypeScript is structurally typed: a value is assignable to a type if it has the required members, regardless of declared names. Two interfaces with identical shapes are interchangeable, and so are two type aliases of string.",
+      "question": "How would you stop code from passing a UserId where an OrderId is expected if both are strings?",
+      "answer": "Use branded types, e.g. type UserId = string & { readonly __brand: 'UserId' }, produced only by a validating constructor function. The brand exists only at compile time, so there is no runtime cost.",
+      "tags": [
+        "type-system",
+        "patterns"
+      ],
+      "source": {
+        "name": "TypeScript Handbook - Type Compatibility",
+        "url": "https://www.typescriptlang.org/docs/handbook/type-compatibility.html"
+      }
+    },
+    {
+      "id": "typescript-types-erased-002",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Types are erased at runtime",
+      "body": "Type annotations are erased during compilation and TypeScript adds no runtime type checks. Data from JSON.parse, fetch, or environment variables is unchecked; validate it at runtime before treating it as a typed value.",
+      "tags": [
+        "runtime",
+        "validation"
+      ],
+      "source": {
+        "name": "TypeScript Handbook - The Basics",
+        "url": "https://www.typescriptlang.org/docs/handbook/2/basic-types.html"
+      }
+    },
+    {
+      "id": "typescript-unknown-over-any-003",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Prefer unknown over any",
+      "question": "Why prefer unknown over any for values of uncertain type?",
+      "answer": "any turns off checking and spreads silently: anything read from it or assigned from it is unchecked too. unknown accepts any value but forbids using it until you narrow it with typeof, instanceof, in, or a type guard, so the compiler forces the validation step.",
+      "tags": [
+        "type-safety"
+      ],
+      "source": {
+        "name": "TypeScript Handbook - Narrowing",
+        "url": "https://www.typescriptlang.org/docs/handbook/2/narrowing.html"
+      }
+    },
+    {
+      "id": "typescript-exhaustive-switch-004",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Exhaustive switches with never",
+      "question": "type Shape = Circle | Square, each with a kind field, and many switch statements over shape.kind. Someone adds Triangle. How do you make the compiler flag every switch that forgot it?",
+      "answer": "In each default branch assign the value to a never-typed variable: const unreachable: never = shape. If a case is missing, shape is narrowed to Triangle there, which is not assignable to never, so compilation fails at every incomplete switch.",
+      "tags": [
+        "unions",
+        "narrowing"
+      ],
+      "source": {
+        "name": "TypeScript Handbook - Narrowing (exhaustiveness checking)",
+        "url": "https://www.typescriptlang.org/docs/handbook/2/narrowing.html"
+      }
+    },
+    {
+      "id": "typescript-assertion-not-validation-005",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "as is not a runtime check",
+      "question": "Code does const user = (await res.json()) as User and later crashes on user.profile.name. Why did the compiler not help?",
+      "answer": "as is a type assertion, not a conversion or check: it tells the compiler to trust you, and res.json() returns any anyway. The shape was never verified. Validate with a schema library or a user-defined type guard that returns User only after checking, so bad responses fail at the boundary with a clear error.",
+      "tags": [
+        "validation",
+        "type-safety"
+      ],
+      "source": {
+        "name": "TypeScript Handbook - Everyday Types (type assertions)",
+        "url": "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html"
+      }
+    },
+    {
+      "id": "typescript-strict-null-checks-006",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "strictNullChecks",
+      "body": "With strictNullChecks (enabled by the strict flag), null and undefined are not assignable to other types, so possibly-missing values must be narrowed before use. Without it, every type silently includes null and undefined.",
+      "tags": [
+        "tsconfig",
+        "null"
+      ],
+      "source": {
+        "name": "TSConfig Reference - strictNullChecks",
+        "url": "https://www.typescriptlang.org/tsconfig/#strictNullChecks"
+      }
+    },
+    {
+      "id": "typescript-distributive-conditional-007",
+      "type": "why",
+      "difficulty": "hard",
+      "title": "Distributive conditional types",
+      "question": "Why does type ToArray<T> = T extends any ? T[] : never turn string | number into string[] | number[] instead of (string | number)[]?",
+      "answer": "Conditional types distribute over unions when the checked type is a naked type parameter: the condition is applied to each member separately and the results are unioned. Wrap both sides in a tuple, [T] extends [any] ? T[] : never, to turn distribution off.",
+      "tags": [
+        "conditional-types",
+        "generics"
+      ],
+      "source": {
+        "name": "TypeScript Handbook - Conditional Types",
+        "url": "https://www.typescriptlang.org/docs/handbook/2/conditional-types.html"
+      }
+    },
+    {
+      "id": "typescript-enum-vs-union-008",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Enum or string literal union?",
+      "question": "You need a set of string constants for API status values. Choose between a TypeScript enum and a string literal union. What do you weigh?",
+      "answer": "A union like 'active' | 'paused' is fully erased, matches JSON values directly, and works with tools that only strip types. An enum emits a runtime object, and a plain string literal is not assignable to a string enum type. Enums are not erasable syntax, which matters for type-stripping runtimes and the erasableSyntaxOnly compiler option.",
+      "tags": [
+        "enums",
+        "unions"
+      ],
+      "source": {
+        "name": "TypeScript Handbook - Enums",
+        "url": "https://www.typescriptlang.org/docs/handbook/enums.html"
+      }
+    }
+  ]
+}

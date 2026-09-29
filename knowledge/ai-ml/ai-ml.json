@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "topic": "ai-ml",
+  "category": "ai-ml",
+  "name": "AI & ML",
+  "items": [
+    {
+      "id": "ai-ml-train-val-test-001",
+      "type": "concept",
+      "difficulty": "easy",
+      "title": "Train, validation, and test splits",
+      "body": "Fit models on the training set, choose hyperparameters and models on the validation set (or with cross-validation), and use the test set once at the end for an unbiased estimate. Tuning against the test set turns it into another validation set.",
+      "tags": [
+        "evaluation",
+        "data"
+      ],
+      "source": {
+        "name": "scikit-learn - Cross-validation",
+        "url": "https://scikit-learn.org/stable/modules/cross_validation.html"
+      }
+    },
+    {
+      "id": "ai-ml-data-leakage-002",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "A model too good to be true",
+      "question": "Your churn model scores 0.99 AUC offline and is useless in production. You scaled features on the full dataset and split randomly. What happened?",
+      "answer": "Data leakage: fitting the scaler on all rows let test statistics into training, and a random split may put the same customer or future events on both sides. Fit preprocessing inside a Pipeline on training data only, split by time or by group, and drop features unavailable at prediction time.",
+      "tags": [
+        "leakage",
+        "evaluation"
+      ],
+      "source": {
+        "name": "scikit-learn - Common pitfalls and recommended practices",
+        "url": "https://scikit-learn.org/stable/common_pitfalls.html"
+      }
+    },
+    {
+      "id": "ai-ml-precision-recall-003",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Choosing precision or recall",
+      "question": "A fraud model is 99.5 percent accurate but fraud is 0.5 percent of transactions. How should you evaluate it?",
+      "answer": "Accuracy is meaningless here because predicting never-fraud scores 99.5 percent. Use precision (of flagged, how many are fraud) and recall (of fraud, how many are flagged), a precision-recall curve, and pick a threshold based on the cost of missed fraud versus false alarms.",
+      "tags": [
+        "metrics",
+        "imbalance"
+      ],
+      "source": {
+        "name": "scikit-learn - Metrics and scoring",
+        "url": "https://scikit-learn.org/stable/modules/model_evaluation.html"
+      }
+    },
+    {
+      "id": "ai-ml-cosine-similarity-004",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Cosine similarity on embeddings",
+      "body": "Cosine similarity compares the angle between two vectors, ignoring magnitude, with values from -1 to 1. For unit-normalized embeddings it equals the dot product, which is why vector search often normalizes and uses inner product.",
+      "tags": [
+        "embeddings",
+        "retrieval"
+      ],
+      "source": {
+        "name": "Google ML Crash Course - Embeddings",
+        "url": "https://developers.google.com/machine-learning/crash-course/embeddings"
+      }
+    },
+    {
+      "id": "ai-ml-overfitting-005",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Why training loss falls as validation rises",
+      "question": "Why does validation loss start rising while training loss keeps falling?",
+      "answer": "The model is overfitting: it memorizes noise and specifics of the training data that do not generalize. Remedies include more data, regularization, simpler models, dropout, and early stopping at the validation minimum.",
+      "tags": [
+        "overfitting",
+        "training"
+      ],
+      "source": {
+        "name": "Google ML Crash Course - Overfitting",
+        "url": "https://developers.google.com/machine-learning/crash-course/overfitting"
+      }
+    },
+    {
+      "id": "ai-ml-learning-rate-006",
+      "type": "concept",
+      "difficulty": "easy",
+      "title": "Gradient descent and learning rate",
+      "body": "Gradient descent updates weights by a step against the gradient of the loss, scaled by the learning rate. Too small and training crawls; too large and loss oscillates or diverges.",
+      "question": "Think: your loss becomes NaN after a few steps. What do you try first?",
+      "answer": "Lower the learning rate (or add warmup and gradient clipping), and check the inputs for unscaled features or bad values.",
+      "tags": [
+        "optimization",
+        "training"
+      ],
+      "source": {
+        "name": "Google ML Crash Course",
+        "url": "https://developers.google.com/machine-learning/crash-course/"
+      }
+    }
+  ]
+}

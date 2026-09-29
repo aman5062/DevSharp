@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "topic": "bash",
+  "category": "languages",
+  "name": "Bash",
+  "items": [
+    {
+      "id": "bash-quote-expansions-001",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Unquoted variables",
+      "question": "A script runs rm -rf $DIR/build and one day DIR is unset. What happens, and how do you guard against it?",
+      "answer": "It expands to rm -rf /build, and unquoted variables also undergo word splitting and glob expansion on spaces or asterisks. Quote every expansion (\"$DIR\"), use ${DIR:?DIR is not set} to abort when it is empty or unset, and enable set -u to fail on unset variables.",
+      "tags": [
+        "quoting",
+        "safety"
+      ],
+      "source": {
+        "name": "GNU Bash Manual - Shell Parameter Expansion",
+        "url": "https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html"
+      }
+    },
+    {
+      "id": "bash-pipefail-002",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "pipefail",
+      "body": "A pipeline returns the exit status of its last command, so failing_cmd | tee log succeeds. set -o pipefail makes it return the status of the rightmost failing command, and the PIPESTATUS array holds every stage's status.",
+      "tags": [
+        "pipelines",
+        "errors"
+      ],
+      "source": {
+        "name": "GNU Bash Manual - Pipelines",
+        "url": "https://www.gnu.org/software/bash/manual/html_node/Pipelines.html"
+      }
+    },
+    {
+      "id": "bash-set-e-limits-003",
+      "type": "why",
+      "difficulty": "hard",
+      "title": "set -e is not a guarantee",
+      "question": "Why doesn't set -e reliably stop a script on every failure?",
+      "answer": "errexit is ignored in many contexts: commands tested by if or while, commands before && or ||, and non-final pipeline stages without pipefail. It is also suppressed inside functions called from those contexts. Treat it as a safety net and check critical commands explicitly.",
+      "tags": [
+        "errors",
+        "gotcha"
+      ],
+      "source": {
+        "name": "GNU Bash Manual - The Set Builtin",
+        "url": "https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html"
+      }
+    },
+    {
+      "id": "bash-pipeline-subshell-004",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Pipelines run in subshells",
+      "body": "Each command in a pipeline runs in a subshell by default, so variables changed inside cmd | while read line; do count=$((count+1)); done are lost when the loop ends.",
+      "question": "How do you keep the count?",
+      "answer": "Feed the loop by redirection instead of a pipe: while read -r line; do ...; done < file, or use process substitution: done < <(cmd). Bash also has shopt -s lastpipe, which runs the last stage in the current shell when job control is off.",
+      "tags": [
+        "pipelines",
+        "subshells"
+      ],
+      "source": {
+        "name": "GNU Bash Manual - Pipelines",
+        "url": "https://www.gnu.org/software/bash/manual/html_node/Pipelines.html"
+      }
+    },
+    {
+      "id": "bash-iterate-files-005",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Looping over filenames safely",
+      "question": "for f in $(ls *.txt) breaks on filenames containing spaces. What is the robust approach?",
+      "answer": "Iterate the glob directly: for f in ./*.txt; do ...; done, and quote \"$f\" inside the loop. Command substitution output is word-split on IFS and glob-expanded again. For recursive listings use find ... -print0 with while IFS= read -r -d '' f.",
+      "tags": [
+        "globbing",
+        "quoting"
+      ],
+      "source": {
+        "name": "GNU Bash Manual - Filename Expansion",
+        "url": "https://www.gnu.org/software/bash/manual/html_node/Filename-Expansion.html"
+      }
+    },
+    {
+      "id": "bash-trap-exit-006",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Cleanup with trap EXIT",
+      "body": "trap 'cleanup' EXIT runs cleanup whenever the shell exits, including after a failure under set -e. It is the standard way to remove temporary files and directories created with mktemp.",
+      "tags": [
+        "traps",
+        "cleanup"
+      ],
+      "source": {
+        "name": "GNU Bash Manual - Bourne Shell Builtins (trap)",
+        "url": "https://www.gnu.org/software/bash/manual/html_node/Bourne-Shell-Builtins.html"
+      }
+    }
+  ]
+}

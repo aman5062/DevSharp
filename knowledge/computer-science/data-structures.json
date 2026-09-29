@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "topic": "data-structures",
+  "category": "computer-science",
+  "name": "Data Structures",
+  "items": [
+    {
+      "id": "data-structures-bloom-false-positives-001",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Bloom filters: false positives only",
+      "body": "A Bloom filter answers set membership with possibly in set or definitely not in set. It can return false positives but never false negatives, and a standard Bloom filter cannot delete items.",
+      "tags": [
+        "probabilistic",
+        "sets"
+      ],
+      "source": {
+        "name": "Wikipedia - Bloom filter",
+        "url": "https://en.wikipedia.org/wiki/Bloom_filter"
+      }
+    },
+    {
+      "id": "data-structures-btree-vs-hash-002",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "B-tree vs hash indexes",
+      "body": "A B-tree keeps keys sorted, so it supports equality, range queries, ORDER BY, and prefix matching. A hash index supports only equality lookups. That is why B-tree is the default index type in PostgreSQL and most databases.",
+      "question": "Think: which index serves WHERE created_at BETWEEN a AND b?",
+      "answer": "A B-tree. A hash index cannot scan a range because hashing destroys key order.",
+      "tags": [
+        "databases",
+        "indexes"
+      ],
+      "source": {
+        "name": "PostgreSQL docs - Index types",
+        "url": "https://www.postgresql.org/docs/current/indexes-types.html"
+      }
+    },
+    {
+      "id": "data-structures-heap-top-k-003",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Top 10 from a billion scores",
+      "question": "You need the 10 highest scores from a stream of a billion records and cannot hold them all in memory. What structure do you use?",
+      "answer": "Keep a min-heap of size k. For each record, if it beats the heap minimum, replace the minimum. That is O(n log k) time and O(k) memory, versus sorting everything at O(n log n). Python heapq.nlargest implements this pattern.",
+      "tags": [
+        "heaps",
+        "streaming"
+      ],
+      "source": {
+        "name": "Python docs - heapq",
+        "url": "https://docs.python.org/3/library/heapq.html"
+      }
+    },
+    {
+      "id": "data-structures-linked-list-locality-004",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "The linked list that lost to an array",
+      "question": "Benchmarks show iterating a linked list of a million ints is several times slower than an array of the same ints, though both are O(n). Why?",
+      "answer": "Array elements are contiguous, so each cache line holds several values and hardware prefetchers predict the access pattern. Linked list nodes can be scattered in memory, so each step may be a cache miss behind a pointer dereference. Asymptotic complexity is the same, but memory access cost dominates.",
+      "tags": [
+        "cache",
+        "performance"
+      ],
+      "source": {
+        "name": "cppreference - std::vector",
+        "url": "https://en.cppreference.com/w/cpp/container/vector"
+      }
+    },
+    {
+      "id": "data-structures-trie-autocomplete-005",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Why tries suit autocomplete",
+      "question": "Why is a trie a natural fit for prefix autocomplete compared with a hash set of words?",
+      "answer": "A trie stores strings along paths of characters, so all words sharing a prefix live under one node. Finding completions costs time proportional to the prefix length plus the number of results. A hash set can only answer exact matches, so a prefix query would have to scan every key.",
+      "tags": [
+        "tries",
+        "strings"
+      ],
+      "source": {
+        "name": "Wikipedia - Trie",
+        "url": "https://en.wikipedia.org/wiki/Trie"
+      }
+    },
+    {
+      "id": "data-structures-deque-ends-006",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Use a deque for queue operations",
+      "body": "Removing from the front of a Python list is O(n) because every element shifts. collections.deque supports O(1) appends and pops at both ends, making it the right choice for FIFO queues and BFS.",
+      "tags": [
+        "queues",
+        "python"
+      ],
+      "source": {
+        "name": "Python docs - collections.deque",
+        "url": "https://docs.python.org/3/library/collections.html#collections.deque"
+      }
+    }
+  ]
+}

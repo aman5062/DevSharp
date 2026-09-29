@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "topic": "http",
+  "category": "backend",
+  "name": "HTTP",
+  "items": [
+    {
+      "id": "http-idempotent-methods-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Idempotent methods",
+      "body": "GET, HEAD, OPTIONS, PUT, and DELETE are idempotent: repeating the request has the same intended effect on the server as sending it once. POST and PATCH are not, so clients and proxies may automatically retry the former after a network failure but not the latter.",
+      "question": "Is it a violation if a second DELETE of the same resource returns 404?",
+      "answer": "No. Idempotency concerns the effect on server state, not identical responses: after either call the resource is gone.",
+      "tags": [
+        "methods",
+        "retries"
+      ],
+      "source": {
+        "name": "RFC 9110 - HTTP Semantics, Idempotent Methods",
+        "url": "https://www.rfc-editor.org/rfc/rfc9110#section-9.2.2"
+      }
+    },
+    {
+      "id": "http-asset-cache-policy-002",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Caching bundles vs HTML",
+      "question": "Your fingerprinted bundles (app.3f9a1c.js) and index.html are served with the same Cache-Control header. What should each get?",
+      "answer": "Fingerprinted assets never change at a given URL, so use Cache-Control: public, max-age=31536000, immutable. index.html references them and must update on deploy, so use no-cache with an ETag so clients store it but revalidate before each use.",
+      "tags": [
+        "caching",
+        "deploys"
+      ],
+      "source": {
+        "name": "RFC 9111 - HTTP Caching",
+        "url": "https://www.rfc-editor.org/rfc/rfc9111"
+      }
+    },
+    {
+      "id": "http-no-cache-vs-no-store-003",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "no-cache vs no-store",
+      "body": "Cache-Control: no-cache allows a response to be stored but requires revalidation with the origin before each reuse. no-store forbids storing it at all, which is what sensitive responses need.",
+      "tags": [
+        "caching",
+        "headers"
+      ],
+      "source": {
+        "name": "MDN - Cache-Control",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control"
+      }
+    },
+    {
+      "id": "http-http2-hol-blocking-004",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Head-of-line blocking in HTTP/2",
+      "question": "Why does HTTP/2 multiplexing still suffer head-of-line blocking, and how does HTTP/3 address it?",
+      "answer": "HTTP/2 multiplexes streams over one TCP connection, and TCP delivers bytes strictly in order, so one lost packet stalls every stream until it is retransmitted. HTTP/3 runs over QUIC, where each stream is ordered independently, so a loss only delays the stream it belongs to.",
+      "tags": [
+        "http2",
+        "http3",
+        "performance"
+      ],
+      "source": {
+        "name": "RFC 9114 - HTTP/3",
+        "url": "https://www.rfc-editor.org/rfc/rfc9114"
+      }
+    },
+    {
+      "id": "http-401-403-404-005",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "401, 403, or 404?",
+      "question": "A logged-in user requests another tenant's invoice. Should the API return 401, 403, or 404?",
+      "answer": "Not 401, which means missing or invalid credentials. 403 says the caller is known but not allowed. Many APIs return 404 instead so they do not reveal that the resource exists. Either is defensible; be consistent and never leak the data.",
+      "tags": [
+        "status-codes",
+        "authorization"
+      ],
+      "source": {
+        "name": "RFC 9110 - Client Error 4xx",
+        "url": "https://www.rfc-editor.org/rfc/rfc9110#section-15.5"
+      }
+    },
+    {
+      "id": "http-vary-header-006",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "The Vary header",
+      "body": "Vary lists request headers that change the response, for example Vary: Accept-Encoding. Shared caches include them in the cache key; forgetting Vary can serve compressed bytes to a client that cannot decode them or one locale's page to another user.",
+      "tags": [
+        "caching",
+        "headers"
+      ],
+      "source": {
+        "name": "RFC 9110 - Vary",
+        "url": "https://www.rfc-editor.org/rfc/rfc9110#field.vary"
+      }
+    }
+  ]
+}

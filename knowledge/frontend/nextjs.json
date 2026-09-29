@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "topic": "nextjs",
+  "category": "frontend",
+  "name": "Next.js",
+  "items": [
+    {
+      "id": "nextjs-server-client-boundary-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Server Components and 'use client'",
+      "body": "In the App Router, components are Server Components by default: they render on the server, can read data directly, and ship no JavaScript of their own. A 'use client' directive marks a boundary; that module and everything it imports join the client bundle.",
+      "question": "Where should 'use client' go in a page that has a single interactive button?",
+      "answer": "In the small button component only, not the page. Keep data fetching and static markup in Server Components and pass serializable props, or server-rendered children, into the client leaf.",
+      "tags": [
+        "rsc",
+        "bundling"
+      ],
+      "source": {
+        "name": "Next.js docs - 'use client' directive",
+        "url": "https://nextjs.org/docs/app/api-reference/directives/use-client"
+      }
+    },
+    {
+      "id": "nextjs-server-actions-authz-002",
+      "type": "why",
+      "difficulty": "hard",
+      "title": "Server Actions are public endpoints",
+      "question": "Why must every Server Action re-check authentication and authorization, even if it is only rendered on an admin page?",
+      "answer": "A Server Action is exposed as an HTTP endpoint that any client can call with crafted arguments; hiding the button protects nothing. Treat arguments as untrusted input, validate them, and verify the session and permissions inside the action itself.",
+      "tags": [
+        "security",
+        "server-actions"
+      ],
+      "source": {
+        "name": "React docs - 'use server'",
+        "url": "https://react.dev/reference/rsc/use-server"
+      }
+    },
+    {
+      "id": "nextjs-next-public-env-003",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "NEXT_PUBLIC_ variables",
+      "body": "Only environment variables prefixed with NEXT_PUBLIC_ are exposed to the browser, and their values are inlined into the JavaScript bundle at build time. Changing them requires a rebuild, and anything with that prefix is public.",
+      "tags": [
+        "config",
+        "security"
+      ],
+      "source": {
+        "name": "Next.js docs - Environment Variables",
+        "url": "https://nextjs.org/docs/app/building-your-application/configuring/environment-variables"
+      }
+    },
+    {
+      "id": "nextjs-hydration-mismatch-004",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Hydration mismatch",
+      "question": "A component renders new Date().toLocaleTimeString() and the console reports a hydration mismatch. What is happening and how do you fix it?",
+      "answer": "The server rendered one time string and the client's first render produced another, so the HTML does not match what React expects while hydrating. Render time- or browser-dependent values after mount (state set in useEffect), pass a fixed value from the server, or use suppressHydrationWarning for unavoidable text differences.",
+      "tags": [
+        "hydration",
+        "ssr"
+      ],
+      "source": {
+        "name": "React docs - hydrateRoot",
+        "url": "https://react.dev/reference/react-dom/client/hydrateRoot"
+      }
+    },
+    {
+      "id": "nextjs-server-only-imports-005",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Keeping server code out of bundles",
+      "question": "A client component imports a helper from lib/db.ts, which also reads process.env.DB_PASSWORD. What are the risks, and how do you turn this into a build error?",
+      "answer": "The module is pulled into the browser bundle: non-public env vars become undefined so it breaks, and server logic or anything accidentally inlined could be exposed. Add import 'server-only' at the top of server modules so that importing them from client code fails the build.",
+      "tags": [
+        "bundling",
+        "security"
+      ],
+      "source": {
+        "name": "Next.js docs - App Router",
+        "url": "https://nextjs.org/docs/app"
+      }
+    },
+    {
+      "id": "nextjs-serializable-props-006",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Props crossing the boundary",
+      "body": "Props passed from a Server Component to a Client Component must be serializable by React: primitives, plain objects, arrays, Dates, Maps, Sets, promises and similar, but not ordinary functions or class instances. Server Actions are the exception for functions.",
+      "tags": [
+        "rsc",
+        "props"
+      ],
+      "source": {
+        "name": "React docs - 'use client' (serializable types)",
+        "url": "https://react.dev/reference/rsc/use-client"
+      }
+    }
+  ]
+}

@@ -1,0 +1,135 @@
+{
+  "schema": 1,
+  "topic": "docker",
+  "category": "devops",
+  "name": "Docker",
+  "items": [
+    {
+      "id": "docker-layer-cache-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Build cache and instruction order",
+      "body": "Each Dockerfile instruction produces a layer, and the builder reuses cached layers until an instruction or its inputs change; every step after that point is rebuilt. Order instructions from least to most frequently changing.",
+      "question": "Where should copying package.json and running npm ci go relative to COPY . .?",
+      "answer": "Before it: copy only the manifest and lockfile, install dependencies, then copy the source. Code edits then reuse the cached dependency layer instead of reinstalling everything.",
+      "tags": [
+        "build",
+        "caching"
+      ],
+      "source": {
+        "name": "Docker docs - Docker build cache",
+        "url": "https://docs.docker.com/build/cache/"
+      }
+    },
+    {
+      "id": "docker-multi-stage-002",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Shrinking a bloated image",
+      "question": "Your Go service image is 1.2 GB because it contains the compiler and build cache. How do you shrink it?",
+      "answer": "Use a multi-stage build: compile in a golang stage, then COPY --from that stage only the binary into a minimal final stage, such as a distroless image or scratch for a static binary. The final image carries no toolchain, which also shrinks the attack surface.",
+      "tags": [
+        "build",
+        "image-size"
+      ],
+      "source": {
+        "name": "Docker docs - Multi-stage builds",
+        "url": "https://docs.docker.com/build/building/multi-stage/"
+      }
+    },
+    {
+      "id": "docker-pid1-signals-003",
+      "type": "why",
+      "difficulty": "hard",
+      "title": "docker stop takes 10 seconds",
+      "question": "Why does docker stop wait 10 seconds and then kill a container started with CMD npm start?",
+      "answer": "docker stop sends SIGTERM to PID 1 and SIGKILL after the grace period. Wrappers like npm or a shell may not forward SIGTERM to your app, and PID 1 gets no default signal handlers, so an unhandled SIGTERM is ignored. Use exec-form CMD running node directly, handle SIGTERM, and use --init for signal forwarding and zombie reaping.",
+      "tags": [
+        "signals",
+        "shutdown"
+      ],
+      "source": {
+        "name": "Docker docs - docker container stop",
+        "url": "https://docs.docker.com/reference/cli/docker/container/stop/"
+      }
+    },
+    {
+      "id": "docker-dockerignore-004",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "The build context and .dockerignore",
+      "body": "The build context is sent to the builder, and COPY . . copies from it. A .dockerignore that excludes node_modules, .git, and secret files such as .env speeds up builds and keeps credentials out of image layers.",
+      "tags": [
+        "build",
+        "security"
+      ],
+      "source": {
+        "name": "Docker docs - Build context",
+        "url": "https://docs.docker.com/build/concepts/context/"
+      }
+    },
+    {
+      "id": "docker-secrets-in-layers-005",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "Deleting a secret in a later layer",
+      "question": "A Dockerfile copies .npmrc containing a token, runs npm ci, then runs rm .npmrc. Is the token gone from the image?",
+      "answer": "No. The file still exists in the earlier layer, and anyone who can pull the image can extract it. Use a BuildKit secret mount (RUN --mount=type=secret,id=npmrc ...) so the secret is available only during that step and is never written to a layer.",
+      "tags": [
+        "security",
+        "secrets"
+      ],
+      "source": {
+        "name": "Docker docs - Build secrets",
+        "url": "https://docs.docker.com/build/building/secrets/"
+      }
+    },
+    {
+      "id": "docker-published-ports-firewall-006",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Published ports bypass ufw",
+      "body": "Publishing a port with -p 5432:5432 binds it on all host interfaces, and Docker inserts its own iptables rules that take effect before host firewall tools such as ufw. Bind local-only services to 127.0.0.1:5432:5432.",
+      "tags": [
+        "networking",
+        "security"
+      ],
+      "source": {
+        "name": "Docker docs - Packet filtering and firewalls",
+        "url": "https://docs.docker.com/engine/network/packet-filtering-firewalls/"
+      }
+    },
+    {
+      "id": "docker-named-volumes-007",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Why data belongs in volumes",
+      "question": "Why store database files in a named volume instead of the container's writable layer?",
+      "answer": "The writable layer is deleted with the container and goes through the storage driver's copy-on-write machinery, which is slower for write-heavy workloads. Volumes are managed by Docker, persist independently of any container, and write directly to the host filesystem.",
+      "tags": [
+        "storage",
+        "volumes"
+      ],
+      "source": {
+        "name": "Docker docs - Volumes",
+        "url": "https://docs.docker.com/engine/storage/volumes/"
+      }
+    },
+    {
+      "id": "docker-exit-137-008",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Exit code 137",
+      "question": "A container keeps dying with exit code 137 under load. What does that tell you and what do you check?",
+      "answer": "137 is 128 + 9: the process received SIGKILL, commonly from the kernel OOM killer after the container hit its memory limit. Check docker inspect for OOMKilled, compare real usage with the limit, and make sure runtime heap settings (JVM, Node, and so on) leave headroom for native memory under the cgroup limit.",
+      "tags": [
+        "memory",
+        "debugging"
+      ],
+      "source": {
+        "name": "Docker docs - Resource constraints",
+        "url": "https://docs.docker.com/engine/containers/resource_constraints/"
+      }
+    }
+  ]
+}

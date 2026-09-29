@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "topic": "sql",
+  "category": "databases",
+  "name": "SQL",
+  "items": [
+    {
+      "id": "sql-not-in-null-001",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "NOT IN with a NULL",
+      "question": "SELECT * FROM users WHERE id NOT IN (SELECT manager_id FROM teams) returns zero rows, even though many users manage nothing. Why?",
+      "answer": "If the subquery returns any NULL, id NOT IN (...) includes the comparison id <> NULL, which is UNKNOWN, so no row can make the predicate TRUE. Use NOT EXISTS with a correlated subquery, or filter WHERE manager_id IS NOT NULL inside the subquery.",
+      "tags": [
+        "null",
+        "subqueries",
+        "gotcha"
+      ],
+      "source": {
+        "name": "PostgreSQL docs - Subquery Expressions",
+        "url": "https://www.postgresql.org/docs/current/functions-subquery.html"
+      }
+    },
+    {
+      "id": "sql-three-valued-logic-002",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Three-valued logic",
+      "body": "SQL uses three-valued logic: comparisons involving NULL yield UNKNOWN, and WHERE keeps only rows that evaluate to TRUE. So col = NULL never matches; use IS NULL, or IS [NOT] DISTINCT FROM for null-safe comparison.",
+      "tags": [
+        "null"
+      ],
+      "source": {
+        "name": "PostgreSQL docs - Comparison Functions and Operators",
+        "url": "https://www.postgresql.org/docs/current/functions-comparison.html"
+      }
+    },
+    {
+      "id": "sql-composite-index-order-003",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Column order in composite indexes",
+      "question": "Why can an index on (tenant_id, created_at) serve WHERE tenant_id = ? ORDER BY created_at well, but not a query filtering only on created_at?",
+      "answer": "A composite B-tree is sorted by the first column, then by the second within each first-column value, like a phone book sorted by last then first name. Equality on the leading column narrows to one contiguous, already-sorted range. Without it, matching entries are scattered across the whole index.",
+      "tags": [
+        "indexes",
+        "performance"
+      ],
+      "source": {
+        "name": "PostgreSQL docs - Multicolumn Indexes",
+        "url": "https://www.postgresql.org/docs/current/indexes-multicolumn.html"
+      }
+    },
+    {
+      "id": "sql-n-plus-one-004",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "51 queries for one page",
+      "question": "A page lists 50 orders with each customer's name, and the logs show 51 queries. What is the pattern and the fix?",
+      "answer": "The N+1 query pattern: one query for orders, then one per order for its customer, often hidden by lazy-loading ORMs. Fetch with a JOIN, or run one second query with WHERE id IN (...) and stitch results in memory. Per-query round-trip latency usually dominates, not query cost.",
+      "tags": [
+        "performance",
+        "orm"
+      ],
+      "source": {
+        "name": "PostgreSQL docs - Joins Between Tables",
+        "url": "https://www.postgresql.org/docs/current/tutorial-join.html"
+      }
+    },
+    {
+      "id": "sql-window-functions-005",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Window functions",
+      "body": "Window functions such as ROW_NUMBER(), RANK(), and SUM(...) OVER (PARTITION BY ... ORDER BY ...) compute across related rows without collapsing them the way GROUP BY does. They turn top-N-per-group and running totals into single queries.",
+      "tags": [
+        "queries",
+        "analytics"
+      ],
+      "source": {
+        "name": "PostgreSQL docs - Window Functions tutorial",
+        "url": "https://www.postgresql.org/docs/current/tutorial-window.html"
+      }
+    },
+    {
+      "id": "sql-isolation-levels-006",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Isolation levels",
+      "body": "The SQL standard defines isolation levels by which anomalies they permit: dirty reads, non-repeatable reads, and phantoms. Many databases default to READ COMMITTED, where two statements in one transaction can see different committed data.",
+      "tags": [
+        "transactions",
+        "isolation"
+      ],
+      "source": {
+        "name": "PostgreSQL docs - Transaction Isolation",
+        "url": "https://www.postgresql.org/docs/current/transaction-iso.html"
+      }
+    }
+  ]
+}

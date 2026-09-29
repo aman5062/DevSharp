@@ -1,0 +1,119 @@
+{
+  "schema": 1,
+  "topic": "system-design",
+  "category": "system-design",
+  "name": "System Design",
+  "items": [
+    {
+      "id": "system-design-consistent-hashing-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Consistent hashing",
+      "body": "With hash(key) mod N, changing N remaps almost every key. Consistent hashing places nodes and keys on a ring so adding or removing a node moves only about 1/N of the keys. Virtual nodes give each server many ring positions to even out load.",
+      "question": "Think: why does mod-N sharding hurt a cache cluster when one node dies?",
+      "answer": "Nearly every key maps to a different node, so the whole cache effectively goes cold at once and the database takes the full miss load.",
+      "tags": [
+        "sharding",
+        "hashing"
+      ],
+      "source": {
+        "name": "AWS Builders Library - Workload isolation using shuffle-sharding",
+        "url": "https://aws.amazon.com/builders-library/workload-isolation-using-shuffle-sharding/"
+      }
+    },
+    {
+      "id": "system-design-token-bucket-002",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Token bucket rate limiting",
+      "body": "A token bucket refills at a fixed rate up to a capacity; each request spends a token and is rejected (typically HTTP 429) when the bucket is empty. The capacity sets the allowed burst and the refill rate sets the sustained rate.",
+      "tags": [
+        "rate-limiting",
+        "api"
+      ],
+      "source": {
+        "name": "RFC 6585 - Additional HTTP Status Codes (429)",
+        "url": "https://www.rfc-editor.org/rfc/rfc6585"
+      }
+    },
+    {
+      "id": "system-design-hot-key-shard-003",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "One shard melting under a hot key",
+      "question": "You shard by user_id, and a celebrity account sends 50x normal traffic to one shard. What are your options?",
+      "answer": "Cache the hot reads in front of the shard, and for writes split the key (user_id plus a small random suffix) so its load spreads across shards, merging on read. Detect hot keys with metrics so you can special-case them rather than resharding everything.",
+      "tags": [
+        "sharding",
+        "hot-keys"
+      ],
+      "source": {
+        "name": "AWS Builders Library - Workload isolation using shuffle-sharding",
+        "url": "https://aws.amazon.com/builders-library/workload-isolation-using-shuffle-sharding/"
+      }
+    },
+    {
+      "id": "system-design-backpressure-queue-004",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "A queue that never drains",
+      "question": "Producers push jobs faster than workers process them, and the queue grows until jobs are hours stale. What do you change?",
+      "answer": "An unbounded queue only hides overload. Bound the queue and apply back-pressure (block or reject producers), shed or expire work that is too old to be useful, and scale consumers on queue age rather than depth alone.",
+      "tags": [
+        "backpressure",
+        "queues"
+      ],
+      "source": {
+        "name": "AWS Builders Library - Avoiding insurmountable queue backlogs",
+        "url": "https://aws.amazon.com/builders-library/avoiding-insurmountable-queue-backlogs/"
+      }
+    },
+    {
+      "id": "system-design-load-shedding-005",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Why reject requests under overload",
+      "question": "Why does a service handle more successful requests when it deliberately rejects some under overload?",
+      "answer": "Past saturation, latency climbs until clients time out, so the server spends work on responses no one waits for and goodput collapses. Shedding excess requests cheaply keeps latency low for the requests it accepts.",
+      "tags": [
+        "overload",
+        "reliability"
+      ],
+      "source": {
+        "name": "AWS Builders Library - Using load shedding to avoid overload",
+        "url": "https://aws.amazon.com/builders-library/using-load-shedding-to-avoid-overload/"
+      }
+    },
+    {
+      "id": "system-design-l4-vs-l7-lb-006",
+      "type": "concept",
+      "difficulty": "easy",
+      "title": "L4 vs L7 load balancing",
+      "body": "A layer 4 load balancer routes TCP or UDP connections by address and port without reading the payload, which is fast and protocol-agnostic. A layer 7 balancer terminates HTTP, so it can route by path or header, retry, and balance per request instead of per connection.",
+      "tags": [
+        "load-balancing",
+        "networking"
+      ],
+      "source": {
+        "name": "Elastic Load Balancing - How it works",
+        "url": "https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/how-elastic-load-balancing-works.html"
+      }
+    },
+    {
+      "id": "system-design-long-lived-connections-007",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Uneven load with gRPC",
+      "question": "You scaled a gRPC service from 3 to 6 pods behind an L4 load balancer, but the new pods get almost no traffic. Why?",
+      "answer": "gRPC multiplexes many requests over long-lived HTTP/2 connections, and an L4 balancer only picks a backend when a connection opens. Use L7 (per-request) balancing, a service mesh, or client-side balancing, or cap connection age so clients reconnect.",
+      "tags": [
+        "load-balancing",
+        "grpc"
+      ],
+      "source": {
+        "name": "Elastic Load Balancing - How it works",
+        "url": "https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/how-elastic-load-balancing-works.html"
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "$comment": "DevSharp configuration. Copy to ~/.config/devsharp/config.json (Windows: %APPDATA%\\devsharp\\config.json) and keep only the keys you want to change. Reference: docs/CONFIGURATION.md",
+  "enabled": true,
+  "frequency": "medium",
+  "mode": "mixed",
+  "show_after_prompt": true,
+  "minimum_interval": "auto",
+  "topics": "auto",
+  "difficulty": "adaptive",
+  "updates": true,
+  "update_refresh_hours": 24,
+  "think_first": true,
+  "reveal": "next-turn",
+  "project_awareness": true,
+  "card_style": "rail",
+  "card_width": 64,
+  "telemetry": false
+}

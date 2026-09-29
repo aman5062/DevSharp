@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "topic": "acme-platform",
+  "category": "custom",
+  "name": "Acme Platform",
+  "items": [
+    {
+      "id": "acme-platform-deploy-001",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Production deploys are blue/green",
+      "body": "Every production deploy starts a complete new stack next to the running one. Traffic moves only after its health checks pass, and the old stack stays warm for 30 minutes so a rollback is a traffic switch, not a rebuild.",
+      "tags": ["deploy", "ci-cd"],
+      "source": { "name": "Acme Platform Handbook: Deploys", "url": "https://handbook.acme.example/platform/deploys" }
+    },
+    {
+      "id": "acme-platform-queue-001",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "The job that ran twice",
+      "question": "A billing job on the Acme job queue charged a customer twice after a worker was restarted mid-job. The queue guarantees at-least-once delivery. What should the job handler do so a redelivery is harmless?",
+      "answer": "Make the handler idempotent. Store an idempotency key (for example the job id) with the charge in the same transaction, and skip the work when the key already exists. At-least-once delivery means any job can be redelivered after a crash, so side effects must be safe to repeat.",
+      "tags": ["distributed-systems", "redis"],
+      "source": { "name": "Acme Platform Handbook: Job Queue", "url": "https://handbook.acme.example/platform/jobs" }
+    },
+    {
+      "id": "acme-platform-config-001",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Why config is read at startup only",
+      "question": "Why do Acme services read their configuration only at startup instead of watching the config store for changes?",
+      "answer": "A restart turns every config change into a normal, observable rollout: it goes through health checks and can be rolled back like code. Hot reloading would let a bad value reach every instance at once, with no deploy record to point at.",
+      "tags": ["deploy"],
+      "source": { "name": "Acme Platform Handbook: Configuration", "url": "https://handbook.acme.example/platform/config" }
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "schema": 1,
+  "topic": "mysql",
+  "category": "databases",
+  "name": "MySQL",
+  "items": [
+    {
+      "id": "mysql-clustered-index-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "InnoDB clustered index",
+      "body": "InnoDB stores table rows inside the primary key B-tree, the clustered index. Secondary indexes store the primary key value as their row pointer, so a lookup through a secondary index then traverses the primary key index as well.",
+      "question": "Why are random UUIDv4 primary keys costly in InnoDB?",
+      "answer": "Random keys insert into arbitrary leaf pages, causing page splits, poor locality, and a larger working set in the buffer pool, and every secondary index carries the wide key. Prefer an auto-increment or time-ordered key such as UUIDv7 stored as BINARY(16).",
+      "tags": [
+        "innodb",
+        "indexes"
+      ],
+      "source": {
+        "name": "MySQL Reference Manual - Clustered and Secondary Indexes",
+        "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html"
+      }
+    },
+    {
+      "id": "mysql-utf8mb4-002",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "utf8 is not full UTF-8",
+      "body": "MySQL's utf8 character set is an alias for utf8mb3, which stores at most 3 bytes per character and cannot hold emoji or other supplementary characters. Use utf8mb4, which is full UTF-8.",
+      "tags": [
+        "charset",
+        "gotcha"
+      ],
+      "source": {
+        "name": "MySQL Reference Manual - The utf8mb4 Character Set",
+        "url": "https://dev.mysql.com/doc/refman/8.4/en/charset-unicode-utf8mb4.html"
+      }
+    },
+    {
+      "id": "mysql-gap-lock-deadlock-003",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "Deadlock on insert-if-missing",
+      "question": "Under REPEATABLE READ, two transactions each run SELECT ... WHERE id = 50 FOR UPDATE on a missing row, then both INSERT id 50, and one fails with a deadlock. Why?",
+      "answer": "A locking read on a missing key takes a gap lock. Gap locks do not conflict with each other, so both transactions hold the same gap; each INSERT then waits for the other's gap lock, forming a cycle. Use INSERT ... ON DUPLICATE KEY UPDATE, or rely on the unique key and handle the duplicate-key error.",
+      "tags": [
+        "locking",
+        "deadlocks",
+        "innodb"
+      ],
+      "source": {
+        "name": "MySQL Reference Manual - InnoDB Locking",
+        "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-locking.html"
+      }
+    },
+    {
+      "id": "mysql-isolation-choice-004",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "REPEATABLE READ vs READ COMMITTED",
+      "question": "Why does InnoDB default to REPEATABLE READ, and why do some teams switch to READ COMMITTED?",
+      "answer": "REPEATABLE READ gives consistent snapshot reads for the whole transaction and historically suited statement-based replication. Its locking reads use next-key and gap locks that can block inserts and cause deadlocks. READ COMMITTED takes far fewer gap locks, which helps write-heavy workloads when row-based binary logging is used.",
+      "tags": [
+        "isolation",
+        "transactions"
+      ],
+      "source": {
+        "name": "MySQL Reference Manual - Transaction Isolation Levels",
+        "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-transaction-isolation-levels.html"
+      }
+    },
+    {
+      "id": "mysql-online-ddl-005",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Altering a huge table",
+      "question": "You must add a column to a 500-million-row table in production. What do you check before running ALTER TABLE?",
+      "answer": "Whether the change supports ALGORITHM=INSTANT or INPLACE with LOCK=NONE, and state them explicitly so MySQL errors instead of silently copying the table. Also watch the metadata lock: an ALTER waiting behind a long transaction blocks every new query on the table. Online schema change tools help when native DDL cannot.",
+      "tags": [
+        "ddl",
+        "migrations",
+        "locking"
+      ],
+      "source": {
+        "name": "MySQL Reference Manual - Online DDL Operations",
+        "url": "https://dev.mysql.com/doc/refman/8.4/en/innodb-online-ddl-operations.html"
+      }
+    },
+    {
+      "id": "mysql-async-replication-006",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Replication is asynchronous",
+      "body": "MySQL replication is asynchronous by default: the source commits without waiting for replicas, so replica reads can be stale and a failover can lose recently committed transactions. Semisynchronous replication narrows that window at a latency cost.",
+      "tags": [
+        "replication",
+        "consistency"
+      ],
+      "source": {
+        "name": "MySQL Reference Manual - Replication",
+        "url": "https://dev.mysql.com/doc/refman/8.4/en/replication.html"
+      }
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "schema": 1,
+  "topic": "mongodb",
+  "category": "databases",
+  "name": "MongoDB",
+  "items": [
+    {
+      "id": "mongodb-embed-vs-reference-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Embed or reference?",
+      "body": "MongoDB schema design follows access patterns: embed data that is read together and bounded in size, like an order's line items, and reference data that is large, unbounded, or shared. Documents are capped at 16 MB, so unbounded arrays are a classic trap.",
+      "tags": [
+        "schema-design"
+      ],
+      "source": {
+        "name": "MongoDB Manual - Data Modeling",
+        "url": "https://www.mongodb.com/docs/manual/data-modeling/"
+      }
+    },
+    {
+      "id": "mongodb-esr-guideline-002",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Ordering compound index fields",
+      "question": "A query filters status equal to 'open', sorts by createdAt, and has a range condition priority > 3. How do you order the compound index?",
+      "answer": "Follow Equality, Sort, Range: { status: 1, createdAt: 1, priority: 1 }. Equality fields first narrow to a contiguous section, the sort field next lets the index return documents already in order without an in-memory sort, and range fields go last.",
+      "tags": [
+        "indexes",
+        "performance"
+      ],
+      "source": {
+        "name": "MongoDB Manual - The ESR (Equality, Sort, Range) Guideline",
+        "url": "https://www.mongodb.com/docs/manual/tutorial/equality-sort-range-guideline/"
+      }
+    },
+    {
+      "id": "mongodb-write-concern-003",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Write concern",
+      "body": "Write concern controls acknowledgement: w: 1 returns once the primary applies the write, while w: 'majority' waits until a majority of voting members have it, so the write survives a failover. Majority is the implicit default for most replica set configurations.",
+      "tags": [
+        "durability",
+        "replication"
+      ],
+      "source": {
+        "name": "MongoDB Manual - Write Concern",
+        "url": "https://www.mongodb.com/docs/manual/reference/write-concern/"
+      }
+    },
+    {
+      "id": "mongodb-monotonic-shard-key-004",
+      "type": "why",
+      "difficulty": "hard",
+      "title": "Monotonic shard keys",
+      "question": "Why is a monotonically increasing field such as createdAt or an ObjectId a poor ranged shard key?",
+      "answer": "Every new insert has the highest value, so all writes land in the last chunk on a single shard, creating a hot spot while others sit idle. Choose a key with high cardinality and even write distribution, a hashed shard key, or a compound key matching common queries so they target one shard.",
+      "tags": [
+        "sharding",
+        "scaling"
+      ],
+      "source": {
+        "name": "MongoDB Manual - Sharding",
+        "url": "https://www.mongodb.com/docs/manual/sharding/"
+      }
+    },
+    {
+      "id": "mongodb-read-your-writes-005",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Stale reads after update",
+      "question": "Users update their profile and immediately see the old version. Reads use readPreference secondaryPreferred. Why, and how do you fix it?",
+      "answer": "Secondaries replicate asynchronously and can lag, so a read right after a write may hit a stale secondary. Read from the primary on read-your-writes paths, or use causally consistent sessions with majority read and write concern.",
+      "tags": [
+        "consistency",
+        "replication"
+      ],
+      "source": {
+        "name": "MongoDB Manual - Read Preference",
+        "url": "https://www.mongodb.com/docs/manual/core/read-preference/"
+      }
+    },
+    {
+      "id": "mongodb-explain-collscan-006",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Spotting a collection scan",
+      "body": "explain('executionStats') shows the winning plan. A COLLSCAN stage means no index was used, and comparing totalDocsExamined with nReturned shows how selective the chosen index really is.",
+      "tags": [
+        "performance",
+        "indexes"
+      ],
+      "source": {
+        "name": "MongoDB Manual - Explain Results",
+        "url": "https://www.mongodb.com/docs/manual/reference/explain-results/"
+      }
+    }
+  ]
+}

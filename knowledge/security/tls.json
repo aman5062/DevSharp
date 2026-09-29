@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "topic": "tls",
+  "category": "security",
+  "name": "TLS",
+  "items": [
+    {
+      "id": "tls-tls13-1rtt-001",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "TLS 1.3 handshake is one round trip",
+      "body": "In TLS 1.3 the client guesses the key exchange group and sends key shares in its ClientHello, so a full handshake completes in 1-RTT instead of 2-RTT in TLS 1.2. Everything after ServerHello, including the certificate, is encrypted.",
+      "tags": [
+        "handshake",
+        "latency"
+      ],
+      "source": {
+        "name": "RFC 8446 - TLS 1.3",
+        "url": "https://www.rfc-editor.org/rfc/rfc8446"
+      }
+    },
+    {
+      "id": "tls-chain-validation-002",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Certificate chain validation",
+      "body": "The client builds a path from the leaf certificate through intermediates to a root in its trust store, checking signatures, validity dates, key usage and that the hostname matches a SAN entry. The server must send the leaf plus intermediates; roots come from the client.",
+      "question": "Your site works in Chrome but curl and a Java client fail with unable to get local issuer certificate. Why?",
+      "answer": "The server is likely not sending the intermediate. Browsers often cache intermediates or fetch them via the AIA extension, masking the problem, while most libraries do not. Serve the full chain (fullchain.pem).",
+      "tags": [
+        "certificates",
+        "pki"
+      ],
+      "source": {
+        "name": "RFC 5280 - X.509 PKI Certificate Profile",
+        "url": "https://www.rfc-editor.org/rfc/rfc5280"
+      }
+    },
+    {
+      "id": "tls-sni-wrong-cert-003",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Wrong certificate on a shared IP",
+      "question": "Several HTTPS sites share one IP behind a load balancer. An old client gets the certificate for a different site. What is going on?",
+      "answer": "The server chooses a certificate using Server Name Indication, the hostname the client sends in ClientHello. A client that omits SNI gets the default certificate. SNI is visible to on-path observers; Encrypted Client Hello (ECH) is the mechanism that hides it.",
+      "tags": [
+        "sni",
+        "hosting"
+      ],
+      "source": {
+        "name": "RFC 6066 - TLS Extensions (SNI)",
+        "url": "https://www.rfc-editor.org/rfc/rfc6066"
+      }
+    },
+    {
+      "id": "tls-zero-rtt-replay-004",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "Enabling 0-RTT early data",
+      "question": "To cut latency you enable TLS 1.3 0-RTT early data on your API edge. A payments POST endpoint sits behind it. What is the risk?",
+      "answer": "Early data is not protected against replay: an attacker can capture and resend it, and the server may process it again. Accept early data only for safe, idempotent requests, or have the edge reject or defer it (HTTP 425 Too Early) for anything that changes state.",
+      "tags": [
+        "0-rtt",
+        "replay"
+      ],
+      "source": {
+        "name": "RFC 8446 - TLS 1.3",
+        "url": "https://www.rfc-editor.org/rfc/rfc8446"
+      }
+    },
+    {
+      "id": "tls-hsts-preload-005",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Why HSTS preload exists",
+      "question": "Why does HSTS still leave a gap on a user first visit, and how does preloading close it?",
+      "answer": "The Strict-Transport-Security header only takes effect after the browser has received it over HTTPS once. A first request typed as http can be intercepted and downgraded (SSL stripping). The preload list ships in browsers, so listed domains are HTTPS-only from the very first request.",
+      "tags": [
+        "hsts",
+        "headers"
+      ],
+      "source": {
+        "name": "MDN - Strict-Transport-Security",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security"
+      }
+    },
+    {
+      "id": "tls-tls13-forward-secrecy-006",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "TLS 1.3 always has forward secrecy",
+      "body": "TLS 1.3 removed static RSA and static Diffie-Hellman key exchange; every full handshake uses ephemeral (EC)DHE. Stealing the server private key later does not decrypt previously recorded sessions.",
+      "tags": [
+        "forward-secrecy",
+        "key-exchange"
+      ],
+      "source": {
+        "name": "RFC 8446 - TLS 1.3",
+        "url": "https://www.rfc-editor.org/rfc/rfc8446"
+      }
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "topic": "java",
+  "category": "languages",
+  "name": "Java",
+  "items": [
+    {
+      "id": "java-equals-hashcode-001",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "equals and hashCode contract",
+      "body": "If you override equals you must override hashCode so that equal objects have equal hash codes; otherwise HashMap and HashSet look in the wrong bucket and appear to lose entries. Records generate both from their components.",
+      "tags": [
+        "collections",
+        "contracts"
+      ],
+      "source": {
+        "name": "Java SE API - Object",
+        "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html"
+      }
+    },
+    {
+      "id": "java-memory-model-volatile-002",
+      "type": "concept",
+      "difficulty": "hard",
+      "title": "Happens-before and volatile",
+      "body": "The Java Memory Model defines happens-before: without synchronization, a write in one thread may never become visible to another or may be observed reordered. volatile guarantees visibility and ordering for that field; synchronized and Lock add mutual exclusion.",
+      "question": "Is volatile int counter; counter++ thread-safe?",
+      "answer": "No. counter++ is a read-modify-write; two threads can read the same value and both write back value + 1. Use AtomicInteger, LongAdder, or a lock.",
+      "tags": [
+        "concurrency",
+        "jmm"
+      ],
+      "source": {
+        "name": "Java Language Specification - Chapter 17 Threads and Locks",
+        "url": "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html"
+      }
+    },
+    {
+      "id": "java-virtual-threads-bottleneck-003",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Virtual threads and pools",
+      "question": "You move a blocking JDBC service to virtual threads and throughput barely improves. The connection pool has 20 connections. Why?",
+      "answer": "Virtual threads make blocking cheap, but they do not add database capacity: at most 20 queries run at once and the rest wait for a connection. Virtual threads help when the limit is the number of platform threads, not a downstream resource. Size pools and concurrency limits (for example a Semaphore) to the real constraint.",
+      "tags": [
+        "virtual-threads",
+        "performance"
+      ],
+      "source": {
+        "name": "JEP 444 - Virtual Threads",
+        "url": "https://openjdk.org/jeps/444"
+      }
+    },
+    {
+      "id": "java-string-immutable-004",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Why Strings are immutable",
+      "question": "Why are Java Strings immutable?",
+      "answer": "Immutable strings can be shared across threads without locking, interned and reused, and can cache their hash code, which makes them efficient HashMap keys. Immutability also prevents a validated value such as a file path from being changed after a security check.",
+      "tags": [
+        "strings",
+        "design"
+      ],
+      "source": {
+        "name": "Java SE API - String",
+        "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html"
+      }
+    },
+    {
+      "id": "java-mutable-set-element-005",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "Mutating a key inside a HashSet",
+      "question": "You add an object to a HashSet, then change a field used in its hashCode. contains(obj) now returns false, yet iterating the set shows it. Explain.",
+      "answer": "The entry was stored in a bucket chosen from the old hash code. After mutation, lookups compute a new hash and search a different bucket, so the element is effectively lost for contains and remove. Use immutable keys, or remove, mutate, and re-insert.",
+      "tags": [
+        "collections",
+        "gotcha"
+      ],
+      "source": {
+        "name": "Java SE API - Set",
+        "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Set.html"
+      }
+    },
+    {
+      "id": "java-generational-gc-006",
+      "type": "why",
+      "difficulty": "hard",
+      "title": "Generational collection",
+      "question": "Why do JVM collectors such as G1 and generational ZGC split the heap into young and old generations?",
+      "answer": "Most objects die young. Collecting the young generation is cheap because cost scales with live objects, and survivors are promoted. Old-generation collections are rarer and more expensive, so separating them keeps pauses and CPU overhead low under high allocation rates.",
+      "tags": [
+        "gc",
+        "jvm"
+      ],
+      "source": {
+        "name": "Java HotSpot VM Garbage Collection Tuning Guide",
+        "url": "https://docs.oracle.com/en/java/javase/21/gctuning/"
+      }
+    }
+  ]
+}

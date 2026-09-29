@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "topic": "sqlite",
+  "category": "databases",
+  "name": "SQLite",
+  "items": [
+    {
+      "id": "sqlite-wal-mode-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "WAL mode",
+      "body": "In WAL mode, writes append to a separate write-ahead log, and readers read the database file plus the WAL, so readers do not block the writer and the writer does not block readers. There is still only one writer at a time, and checkpoints copy WAL pages back into the database.",
+      "tags": [
+        "concurrency",
+        "journaling"
+      ],
+      "source": {
+        "name": "SQLite - Write-Ahead Logging",
+        "url": "https://www.sqlite.org/wal.html"
+      }
+    },
+    {
+      "id": "sqlite-database-locked-002",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "'database is locked' errors",
+      "question": "A web app on SQLite throws 'database is locked' under moderate load. What settings and patterns help?",
+      "answer": "Enable WAL mode, set a busy timeout (PRAGMA busy_timeout) so writers wait instead of failing immediately, keep write transactions short, and start them with BEGIN IMMEDIATE so a read-to-write lock upgrade cannot fail midway. Funneling writes through one connection also helps.",
+      "tags": [
+        "locking",
+        "operations"
+      ],
+      "source": {
+        "name": "SQLite - Result and Error Codes (SQLITE_BUSY)",
+        "url": "https://www.sqlite.org/rescode.html#busy"
+      }
+    },
+    {
+      "id": "sqlite-foreign-keys-off-003",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Foreign keys are off by default",
+      "body": "SQLite does not enforce foreign key constraints unless each connection runs PRAGMA foreign_keys = ON; enforcement is off by default for backward compatibility.",
+      "tags": [
+        "constraints",
+        "gotcha"
+      ],
+      "source": {
+        "name": "SQLite - Foreign Key Support",
+        "url": "https://www.sqlite.org/foreignkeys.html"
+      }
+    },
+    {
+      "id": "sqlite-type-affinity-004",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Text in an INTEGER column",
+      "question": "Why can you insert the string 'abc' into an INTEGER column in SQLite?",
+      "answer": "SQLite uses dynamic typing with type affinity: a column type is a preference, and values that cannot be converted are stored with their own type. Declare tables STRICT to get rigid type enforcement.",
+      "tags": [
+        "types",
+        "gotcha"
+      ],
+      "source": {
+        "name": "SQLite - Datatypes In SQLite",
+        "url": "https://www.sqlite.org/datatype3.html"
+      }
+    },
+    {
+      "id": "sqlite-network-filesystem-005",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "SQLite on NFS",
+      "question": "A team wants to put a SQLite file on an NFS share used by several app servers. What is the risk?",
+      "answer": "SQLite depends on file locking, and many network filesystems implement it incorrectly, which can corrupt the database. WAL mode also requires shared memory on the same host. For multiple machines, use a client/server database or a purpose-built replicated SQLite service.",
+      "tags": [
+        "architecture",
+        "durability"
+      ],
+      "source": {
+        "name": "SQLite - Appropriate Uses For SQLite",
+        "url": "https://www.sqlite.org/whentouse.html"
+      }
+    },
+    {
+      "id": "sqlite-batch-inserts-006",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Wrap bulk inserts in a transaction",
+      "body": "Outside an explicit transaction every INSERT is its own transaction and waits for data to be durably synced. Wrapping thousands of inserts in one BEGIN ... COMMIT can make bulk loads orders of magnitude faster.",
+      "tags": [
+        "performance",
+        "transactions"
+      ],
+      "source": {
+        "name": "SQLite FAQ - INSERT is really slow",
+        "url": "https://www.sqlite.org/faq.html#q19"
+      }
+    }
+  ]
+}

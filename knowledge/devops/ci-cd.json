@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "topic": "ci-cd",
+  "category": "devops",
+  "name": "CI/CD",
+  "items": [
+    {
+      "id": "ci-cd-continuous-integration-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "What CI really means",
+      "body": "Continuous integration means everyone merges small changes into the mainline frequently, and each merge triggers an automated build and test run. The goal is to detect integration problems within minutes, while the change is small and still fresh in mind.",
+      "tags": [
+        "ci",
+        "practices"
+      ],
+      "source": {
+        "name": "Martin Fowler - Continuous Integration",
+        "url": "https://martinfowler.com/articles/continuousIntegration.html"
+      }
+    },
+    {
+      "id": "ci-cd-flaky-tests-002",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Reflexive reruns",
+      "question": "About 10% of CI runs fail on tests that pass on retry, and developers now rerun reflexively. What is the risk and what do you do?",
+      "answer": "Flakiness teaches people to ignore red builds, so real failures slip through. Track flaky tests, quarantine them out of the blocking suite with an owner and a deadline, and fix root causes: shared state, timing assumptions, order dependence, and uncontrolled external services.",
+      "tags": [
+        "testing",
+        "reliability"
+      ],
+      "source": {
+        "name": "Google Testing Blog - Flaky Tests at Google and How We Mitigate Them",
+        "url": "https://testing.googleblog.com/2016/05/flaky-tests-at-google-and-how-we.html"
+      }
+    },
+    {
+      "id": "ci-cd-oidc-federation-003",
+      "type": "why",
+      "difficulty": "hard",
+      "title": "OIDC instead of stored cloud keys",
+      "question": "Why use OIDC federation for CI deployments instead of storing long-lived cloud access keys as CI secrets?",
+      "answer": "The CI job receives a short-lived signed identity token and exchanges it for temporary cloud credentials, and the trust policy can restrict which repository, branch, or environment may assume the role. There is no static key to leak or rotate, and stolen credentials expire quickly.",
+      "tags": [
+        "security",
+        "credentials"
+      ],
+      "source": {
+        "name": "AWS IAM - OIDC identity providers",
+        "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_oidc.html"
+      }
+    },
+    {
+      "id": "ci-cd-untrusted-pr-code-004",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "Running fork PRs with secrets",
+      "question": "A workflow for pull requests from forks checks out the PR code and runs npm install with access to deployment secrets. What is the threat?",
+      "answer": "The fork author controls package.json scripts and the code, so install and test steps run attacker code with your secrets and token. Run untrusted PR code without secrets and with a read-only token, and never let privileged triggers such as pull_request_target check out and execute PR code.",
+      "tags": [
+        "security",
+        "supply-chain"
+      ],
+      "source": {
+        "name": "GitHub Docs - Security hardening for GitHub Actions",
+        "url": "https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions"
+      }
+    },
+    {
+      "id": "ci-cd-pin-actions-005",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Pin third-party actions by SHA",
+      "body": "Referencing a third-party CI action by tag lets its owner, or anyone who compromises the repository, change what runs in your pipeline. Pinning to a full commit SHA makes the reference immutable.",
+      "tags": [
+        "security",
+        "supply-chain"
+      ],
+      "source": {
+        "name": "GitHub Docs - Security hardening for GitHub Actions",
+        "url": "https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions"
+      }
+    },
+    {
+      "id": "ci-cd-build-once-promote-006",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Build once, promote everywhere",
+      "body": "Build an artifact once and promote that exact artifact, for example an image referenced by digest, through staging and production. Rebuilding per environment risks shipping something different from what was tested.",
+      "tags": [
+        "cd",
+        "artifacts"
+      ],
+      "source": {
+        "name": "Continuous Delivery - Principles",
+        "url": "https://continuousdelivery.com/principles/"
+      }
+    }
+  ]
+}

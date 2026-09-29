@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "topic": "css",
+  "category": "frontend",
+  "name": "CSS",
+  "items": [
+    {
+      "id": "css-stacking-context-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Stacking contexts",
+      "body": "z-index only competes within the same stacking context. Positioned elements with a z-index, opacity below 1, transform, filter, and isolation: isolate all create new contexts, and everything inside is layered as one unit relative to its siblings.",
+      "question": "A modal with z-index: 9999 still renders under a header with z-index: 10. Why?",
+      "answer": "The modal sits inside an ancestor that forms its own stacking context at a lower level than the header, so 9999 only applies inside that ancestor. Render the modal near the document root, for example via a portal, or fix the ancestor's stacking.",
+      "tags": [
+        "z-index",
+        "layout"
+      ],
+      "source": {
+        "name": "MDN - Stacking context",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_positioned_layout/Stacking_context"
+      }
+    },
+    {
+      "id": "css-specificity-002",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Specificity columns",
+      "body": "Specificity compares (ids, classes/attributes/pseudo-classes, elements/pseudo-elements) column by column, so no number of classes beats a single id. Inline styles beat stylesheet selectors, and !important declarations beat normal ones.",
+      "tags": [
+        "cascade",
+        "selectors"
+      ],
+      "source": {
+        "name": "MDN - Specificity",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/Specificity"
+      }
+    },
+    {
+      "id": "css-flex-min-width-003",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Flex items that will not shrink",
+      "question": "Why does a flex child containing long text or a wide table overflow its container instead of shrinking?",
+      "answer": "Flex items default to min-width: auto, which resolves to their min-content size, so they refuse to shrink below their longest word or widest child. Set min-width: 0 (or overflow: hidden) on the flex item so it can shrink and its content can wrap or truncate.",
+      "tags": [
+        "flexbox",
+        "gotcha"
+      ],
+      "source": {
+        "name": "MDN - min-width",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/min-width"
+      }
+    },
+    {
+      "id": "css-margin-collapse-004",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Margin pushing the parent",
+      "question": "A child's margin-top: 20px moves its parent down instead of creating space inside the parent. What is going on?",
+      "answer": "The vertical margins of a block parent and its first child collapse when nothing separates them (no border, padding, or new block formatting context). Add padding or a border to the parent, or give it display: flow-root, flex, or grid, which stops the collapse.",
+      "tags": [
+        "box-model",
+        "gotcha"
+      ],
+      "source": {
+        "name": "MDN - Mastering margin collapsing",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_box_model/Mastering_margin_collapsing"
+      }
+    },
+    {
+      "id": "css-cascade-layers-005",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Taming third-party CSS",
+      "question": "Your utility classes keep losing to a third-party stylesheet with more specific selectors. How can cascade layers fix this without !important?",
+      "answer": "Declare layer order, e.g. @layer vendor, base, utilities, and import the vendor CSS into the vendor layer. For normal declarations, layer order beats specificity, so any rule in a later layer wins over earlier layers regardless of selector weight. Unlayered styles beat all layered ones.",
+      "tags": [
+        "cascade",
+        "layers"
+      ],
+      "source": {
+        "name": "MDN - @layer",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/@layer"
+      }
+    },
+    {
+      "id": "css-container-queries-006",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Container queries",
+      "body": "Container queries (@container) style an element based on the size of its container rather than the viewport, so a card can adapt when it sits in a narrow sidebar or a wide column. The ancestor must declare container-type, for example inline-size.",
+      "tags": [
+        "responsive",
+        "layout"
+      ],
+      "source": {
+        "name": "MDN - Container queries",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries"
+      }
+    }
+  ]
+}

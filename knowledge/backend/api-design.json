@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "topic": "api-design",
+  "category": "backend",
+  "name": "API Design",
+  "items": [
+    {
+      "id": "api-design-idempotency-keys-001",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Safe retries for payments",
+      "question": "A mobile client POSTs /payments, the connection drops before the response arrives, and it retries. How do you prevent a double charge?",
+      "answer": "The client sends a unique Idempotency-Key header per logical operation. The server stores the key with a request fingerprint and the result; a retry with the same key returns the stored response instead of executing again, and concurrent duplicates are blocked by a unique constraint or lock on the key.",
+      "tags": [
+        "idempotency",
+        "retries"
+      ],
+      "source": {
+        "name": "Stripe API - Idempotent requests",
+        "url": "https://docs.stripe.com/api/idempotent_requests"
+      }
+    },
+    {
+      "id": "api-design-cursor-pagination-002",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Cursor pagination",
+      "body": "Offset pagination (LIMIT 20 OFFSET 10000) makes the database read and discard the skipped rows, and pages shift when rows are inserted. Cursor pagination returns an opaque token encoding the last row's sort key and continues with WHERE (created_at, id) < (...), which stays fast and stable.",
+      "tags": [
+        "pagination",
+        "performance"
+      ],
+      "source": {
+        "name": "Google AIP-158 - Pagination",
+        "url": "https://google.aip.dev/158"
+      }
+    },
+    {
+      "id": "api-design-problem-details-003",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Structured error responses",
+      "question": "Why return errors in a consistent machine-readable format such as RFC 9457 Problem Details?",
+      "answer": "Clients can branch on a stable type identifier instead of parsing messages, one error handler works across endpoints, and you can add details such as invalid fields without breaking consumers. The HTTP status code alone is too coarse.",
+      "tags": [
+        "errors"
+      ],
+      "source": {
+        "name": "RFC 9457 - Problem Details for HTTP APIs",
+        "url": "https://www.rfc-editor.org/rfc/rfc9457"
+      }
+    },
+    {
+      "id": "api-design-optimistic-concurrency-004",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "Lost updates between editors",
+      "question": "Two admins edit the same product and the second save silently overwrites the first. How can the API detect this?",
+      "answer": "Return an ETag or version with the resource and require clients to send If-Match on PUT or PATCH. If the stored version has changed, respond 412 Precondition Failed so the client can refetch and merge. This is optimistic concurrency with no locks held between requests.",
+      "tags": [
+        "concurrency",
+        "etag"
+      ],
+      "source": {
+        "name": "RFC 9110 - If-Match",
+        "url": "https://www.rfc-editor.org/rfc/rfc9110#field.if-match"
+      }
+    },
+    {
+      "id": "api-design-put-vs-patch-005",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "PUT vs PATCH",
+      "body": "PUT replaces the target resource with the request body, so omitted fields are expected to be cleared. PATCH applies a partial modification described by the body, for example a JSON Merge Patch document.",
+      "tags": [
+        "methods"
+      ],
+      "source": {
+        "name": "RFC 5789 - PATCH Method for HTTP",
+        "url": "https://www.rfc-editor.org/rfc/rfc5789"
+      }
+    },
+    {
+      "id": "api-design-backward-compat-006",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Additive changes are safe",
+      "body": "Adding optional fields and new endpoints is backward compatible; removing or renaming fields, changing types, or making optional inputs required is breaking. Clients should ignore unknown fields so servers can evolve additively.",
+      "tags": [
+        "versioning",
+        "compatibility"
+      ],
+      "source": {
+        "name": "Google AIP-180 - Backwards compatibility",
+        "url": "https://google.aip.dev/180"
+      }
+    }
+  ]
+}

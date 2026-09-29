@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "topic": "linux",
+  "category": "devops",
+  "name": "Linux",
+  "items": [
+    {
+      "id": "linux-deleted-open-files-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Deleted files that still use space",
+      "body": "A file's data is freed only when its last link and its last open file descriptor are gone. Deleting a large log that a process still has open frees nothing until that process closes it or exits.",
+      "question": "df shows a full disk but du cannot find the files. How do you find the culprit?",
+      "answer": "List deleted-but-open files with lsof +L1, or look for (deleted) entries under /proc/PID/fd. Then restart or signal the process to reopen its logs, or truncate the file through its /proc/PID/fd entry.",
+      "tags": [
+        "filesystems",
+        "debugging"
+      ],
+      "source": {
+        "name": "Linux man-pages - unlink(2)",
+        "url": "https://man7.org/linux/man-pages/man2/unlink.2.html"
+      }
+    },
+    {
+      "id": "linux-load-average-io-002",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "High load, idle CPU",
+      "question": "A 4-core server shows a load average of 12 while CPU usage is only 20%. What could explain it?",
+      "answer": "Linux load average counts runnable tasks plus tasks in uninterruptible sleep (D state), which are usually waiting on disk or network filesystem I/O. High load with idle CPU points to I/O stalls; check iowait, the b column in vmstat, and processes stuck in D state.",
+      "tags": [
+        "performance",
+        "io"
+      ],
+      "source": {
+        "name": "Linux man-pages - proc(5)",
+        "url": "https://man7.org/linux/man-pages/man5/proc.5.html"
+      }
+    },
+    {
+      "id": "linux-sigterm-vs-sigkill-003",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "SIGTERM before SIGKILL",
+      "body": "SIGTERM asks a process to exit and can be caught for cleanup; SIGKILL and SIGSTOP cannot be caught, blocked, or ignored. Send SIGTERM first so the process can flush data and release resources.",
+      "tags": [
+        "signals",
+        "processes"
+      ],
+      "source": {
+        "name": "Linux man-pages - signal(7)",
+        "url": "https://man7.org/linux/man-pages/man7/signal.7.html"
+      }
+    },
+    {
+      "id": "linux-overcommit-oom-004",
+      "type": "why",
+      "difficulty": "hard",
+      "title": "OOM kills after successful mallocs",
+      "question": "Why can a Linux process be OOM-killed even though none of its allocation calls failed?",
+      "answer": "Linux overcommits memory by default: malloc reserves virtual address space, and physical pages are assigned only when first touched. If processes later touch those pages and RAM plus swap run out, the kernel cannot fail an allocation that already succeeded, so the OOM killer picks a victim by oom_score, tunable via oom_score_adj.",
+      "tags": [
+        "memory",
+        "oom"
+      ],
+      "source": {
+        "name": "Linux man-pages - proc(5)",
+        "url": "https://man7.org/linux/man-pages/man5/proc.5.html"
+      }
+    },
+    {
+      "id": "linux-too-many-open-files-005",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "'Too many open files'",
+      "question": "A busy proxy starts logging 'Too many open files' at about 1,000 concurrent connections. What limit is it hitting, and how do you raise it?",
+      "answer": "The per-process RLIMIT_NOFILE soft limit, commonly 1024; every socket is a file descriptor. Raise it with ulimit -n, LimitNOFILE= in the systemd unit, or --ulimit for containers, and confirm via /proc/PID/limits. Also check the system-wide fs.file-max.",
+      "tags": [
+        "limits",
+        "networking"
+      ],
+      "source": {
+        "name": "Linux man-pages - getrlimit(2)",
+        "url": "https://man7.org/linux/man-pages/man2/getrlimit.2.html"
+      }
+    },
+    {
+      "id": "linux-namespaces-cgroups-006",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Containers are processes",
+      "body": "Containers are ordinary Linux processes isolated by namespaces, which control what they can see (PIDs, mounts, network, users), and constrained by cgroups, which control how much they can use (CPU, memory, I/O). Unlike VMs, they share the host kernel.",
+      "tags": [
+        "containers",
+        "kernel"
+      ],
+      "source": {
+        "name": "Linux man-pages - namespaces(7)",
+        "url": "https://man7.org/linux/man-pages/man7/namespaces.7.html"
+      }
+    }
+  ]
+}

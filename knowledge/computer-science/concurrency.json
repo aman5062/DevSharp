@@ -1,0 +1,105 @@
+{
+  "schema": 1,
+  "topic": "concurrency",
+  "category": "computer-science",
+  "name": "Concurrency",
+  "items": [
+    {
+      "id": "concurrency-deadlock-conditions-001",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "The four conditions for deadlock",
+      "body": "Deadlock requires all four Coffman conditions: mutual exclusion, hold and wait, no preemption, and circular wait. Breaking any one prevents it; the usual practical fix is a global lock ordering, which removes circular wait.",
+      "tags": [
+        "deadlock",
+        "locks"
+      ],
+      "source": {
+        "name": "Wikipedia - Deadlock",
+        "url": "https://en.wikipedia.org/wiki/Deadlock_(computer_science)"
+      }
+    },
+    {
+      "id": "concurrency-lost-update-002",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "A counter that loses increments",
+      "question": "Eight goroutines each run counter++ a thousand times, and the final value is often below 8000. Why, and how do you fix it?",
+      "answer": "counter++ is a read-modify-write, not atomic, so two goroutines can read the same value and both write back value+1: a data race and lost update. Protect it with a mutex or use an atomic add such as atomic.Int64.Add. Run tests with the race detector to catch these.",
+      "tags": [
+        "races",
+        "go"
+      ],
+      "source": {
+        "name": "Go - Data Race Detector",
+        "url": "https://go.dev/doc/articles/race_detector"
+      }
+    },
+    {
+      "id": "concurrency-false-sharing-003",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "Per-thread counters that do not scale",
+      "question": "You gave each thread its own counter in an array to avoid locking, but adding threads makes it slower. What is happening?",
+      "answer": "False sharing: adjacent counters sit on the same cache line, so each write invalidates that line in other cores and it bounces between caches. Pad or align each counter to its own cache line (typically 64 bytes); C++ offers std::hardware_destructive_interference_size as a hint.",
+      "tags": [
+        "cache",
+        "performance"
+      ],
+      "source": {
+        "name": "cppreference - hardware_destructive_interference_size",
+        "url": "https://en.cppreference.com/w/cpp/thread/hardware_destructive_interference_size"
+      }
+    },
+    {
+      "id": "concurrency-mutex-vs-semaphore-004",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Mutex vs semaphore",
+      "body": "A mutex gives one thread exclusive access and is meant to be released by the thread that acquired it. A counting semaphore holds N permits and limits how many threads proceed at once, and any thread may release a permit. Use a mutex to protect shared state and a semaphore to bound concurrency.",
+      "question": "Think: which one caps outbound requests to 5 in flight?",
+      "answer": "A semaphore initialized with 5 permits.",
+      "tags": [
+        "locks",
+        "synchronization"
+      ],
+      "source": {
+        "name": "Python docs - threading",
+        "url": "https://docs.python.org/3/library/threading.html"
+      }
+    },
+    {
+      "id": "concurrency-async-vs-threads-005",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Why async I/O scales past threads",
+      "question": "Why can an async event loop handle tens of thousands of idle connections where one-thread-per-connection struggles?",
+      "answer": "Each OS thread reserves stack memory and adds scheduling cost, while an async task waiting on I/O is a small object parked until the OS reports readiness. Async only helps I/O-bound work though: a CPU-heavy or blocking call inside a coroutine stalls the whole loop, so offload it to a thread or process pool.",
+      "tags": [
+        "async",
+        "io"
+      ],
+      "source": {
+        "name": "Python docs - asyncio",
+        "url": "https://docs.python.org/3/library/asyncio.html"
+      }
+    },
+    {
+      "id": "concurrency-compare-and-swap-006",
+      "type": "concept",
+      "difficulty": "hard",
+      "title": "Compare-and-swap and lock-free updates",
+      "body": "Compare-and-swap atomically sets a memory location to a new value only if it still holds an expected value, and reports whether it succeeded. Lock-free algorithms retry in a loop: read, compute, CAS, repeat on failure. Under heavy contention retries waste work, and naive designs can suffer the ABA problem.",
+      "question": "Think: what is the ABA problem?",
+      "answer": "A value changes from A to B and back to A between your read and your CAS, so the CAS succeeds even though the state changed underneath you.",
+      "tags": [
+        "atomics",
+        "lock-free"
+      ],
+      "source": {
+        "name": "cppreference - std::atomic compare_exchange",
+        "url": "https://en.cppreference.com/w/cpp/atomic/atomic/compare_exchange"
+      }
+    }
+  ]
+}

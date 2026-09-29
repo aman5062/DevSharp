@@ -1,0 +1,105 @@
+{
+  "schema": 1,
+  "topic": "memory",
+  "category": "computer-science",
+  "name": "Memory & GC",
+  "items": [
+    {
+      "id": "memory-stack-vs-heap-001",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Stack vs heap allocation",
+      "body": "Stack memory holds function frames and is freed automatically when a function returns, making allocation very cheap. Heap memory holds data whose lifetime or size is not tied to a single call and is freed manually or by a garbage collector. Go uses escape analysis to decide which values can stay on the stack.",
+      "tags": [
+        "allocation",
+        "basics"
+      ],
+      "source": {
+        "name": "Go FAQ - Stack or heap",
+        "url": "https://go.dev/doc/faq#stack_or_heap"
+      }
+    },
+    {
+      "id": "memory-generational-gc-002",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Generational GC and the weak generational hypothesis",
+      "body": "The weak generational hypothesis says most objects die young. Generational collectors allocate into a young generation that is collected often and cheaply, and promote survivors to an old generation that is collected less frequently. The JVM collectors and V8 both use this design.",
+      "question": "Think: what workload breaks the hypothesis?",
+      "answer": "A cache of medium-lived objects that survive a few young collections, get promoted, then die, filling the old generation and triggering expensive full collections.",
+      "tags": [
+        "gc",
+        "jvm"
+      ],
+      "source": {
+        "name": "Oracle - Java GC Tuning Guide",
+        "url": "https://docs.oracle.com/en/java/javase/21/gctuning/"
+      }
+    },
+    {
+      "id": "memory-listener-leak-003",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "A single-page app that grows forever",
+      "question": "Memory in your SPA climbs every time a user opens and closes a modal, even though the modal DOM is removed. What is a likely cause?",
+      "answer": "A lingering reference, such as an event listener on window or document, or a timer, whose closure captures the modal. The GC only frees unreachable objects, so the whole modal subtree stays alive. Remove listeners and clear timers on teardown, for example with an AbortController signal, and confirm with heap snapshots.",
+      "tags": [
+        "leaks",
+        "javascript"
+      ],
+      "source": {
+        "name": "MDN - Memory management",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Memory_management"
+      }
+    },
+    {
+      "id": "memory-unbounded-cache-004",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "The in-memory cache that ate the heap",
+      "question": "A service caches responses in a global map keyed by request ID and eventually runs out of memory despite having a GC. Why, and what are the fixes?",
+      "answer": "Every entry stays reachable from the global map, so the GC can never reclaim it: a leak in a garbage-collected language. Bound the cache with a size limit and eviction policy such as LRU, add expiry, or when entries should live only as long as a key object, use a weak map.",
+      "tags": [
+        "leaks",
+        "caching"
+      ],
+      "source": {
+        "name": "MDN - WeakMap",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap"
+      }
+    },
+    {
+      "id": "memory-fragmentation-005",
+      "type": "why",
+      "difficulty": "hard",
+      "title": "Why free memory can fail an allocation",
+      "question": "Why can a process with plenty of total free heap still fail to allocate a large contiguous block?",
+      "answer": "Fragmentation: free space is split into many small gaps between live objects, and none is big enough for the request. Compacting collectors move live objects together to fix this, while non-moving allocators such as malloc mitigate it with size-class bins. Long-running processes that mix allocation sizes are most exposed.",
+      "tags": [
+        "fragmentation",
+        "allocators"
+      ],
+      "source": {
+        "name": "V8 blog - Trash talk: the Orinoco garbage collector",
+        "url": "https://v8.dev/blog/trash-talk"
+      }
+    },
+    {
+      "id": "memory-gc-tuning-go-006",
+      "type": "concept",
+      "difficulty": "hard",
+      "title": "The GC trades memory for CPU",
+      "body": "A tracing GC runs more often when it is given less headroom. In Go, GOGC controls how much the heap may grow before the next cycle, and GOMEMLIMIT sets a soft memory limit. Raising headroom lowers GC CPU cost but increases peak memory.",
+      "question": "Think: your Go service spends 20 percent CPU in GC and has spare RAM. What do you try?",
+      "answer": "Raise GOGC or set GOMEMLIMIT near the container limit so collections run less often, and reduce allocation rate in hot paths.",
+      "tags": [
+        "gc",
+        "go"
+      ],
+      "source": {
+        "name": "Go - A Guide to the Go Garbage Collector",
+        "url": "https://go.dev/doc/gc-guide"
+      }
+    }
+  ]
+}

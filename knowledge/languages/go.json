@@ -1,0 +1,105 @@
+{
+  "schema": 1,
+  "topic": "go",
+  "category": "languages",
+  "name": "Go",
+  "items": [
+    {
+      "id": "go-nil-interface-001",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "A nil error that is not nil",
+      "question": "func find() error { var e *MyErr = nil; return e }. The caller checks err != nil and it is true. Why?",
+      "answer": "An interface value is a (dynamic type, value) pair. Returning a typed nil pointer produces an interface whose type is *MyErr and whose value is nil, which does not equal the nil interface. Return a literal nil on the success path.",
+      "tags": [
+        "interfaces",
+        "errors",
+        "gotcha"
+      ],
+      "source": {
+        "name": "Go FAQ - Why is my nil error value not equal to nil?",
+        "url": "https://go.dev/doc/faq#nil_error"
+      }
+    },
+    {
+      "id": "go-goroutine-scheduler-002",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Goroutine scheduling",
+      "body": "The Go runtime multiplexes goroutines onto OS threads; GOMAXPROCS sets how many threads execute Go code simultaneously. Goroutines start with small, growable stacks and the scheduler can preempt long-running ones, so huge numbers of goroutines are cheap.",
+      "question": "What happens to other goroutines when one makes a blocking system call?",
+      "answer": "The runtime detaches the blocked thread and lets another thread run the remaining goroutines. Network I/O uses the integrated netpoller, so a goroutine waiting on a socket does not occupy a thread at all.",
+      "tags": [
+        "goroutines",
+        "runtime"
+      ],
+      "source": {
+        "name": "Go runtime package docs",
+        "url": "https://pkg.go.dev/runtime"
+      }
+    },
+    {
+      "id": "go-slice-aliasing-003",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "append and shared backing arrays",
+      "question": "a := make([]int, 3, 10); b := append(a, 1); c := append(a, 2). What is b[3]?",
+      "answer": "2. a has spare capacity, so both appends write into the same backing array at index 3, and the second overwrites the first. A slice is a view (pointer, length, capacity). Use a full slice expression a[:3:3] or copy to force a fresh allocation when results must be independent.",
+      "tags": [
+        "slices",
+        "gotcha"
+      ],
+      "source": {
+        "name": "The Go Blog - Go Slices: usage and internals",
+        "url": "https://go.dev/blog/slices-intro"
+      }
+    },
+    {
+      "id": "go-goroutine-leak-004",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Goroutine leaks",
+      "question": "Why is a goroutine blocked forever on sending to an unbuffered channel effectively a memory leak?",
+      "answer": "Blocked goroutines are never garbage collected: their stacks and everything they reference stay alive. If the receiver returned early, for example on a timeout, the sender waits forever. Select on ctx.Done() alongside the send, or use a buffered channel sized for all sends, so every goroutine has a way to exit.",
+      "tags": [
+        "goroutines",
+        "channels",
+        "context"
+      ],
+      "source": {
+        "name": "Go context package docs",
+        "url": "https://pkg.go.dev/context"
+      }
+    },
+    {
+      "id": "go-loopvar-per-iteration-005",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Per-iteration loop variables",
+      "body": "Since Go 1.22, each iteration of a for loop gets its own loop variable, so closures and goroutines capturing it see that iteration's value. Older code copied v := v inside the loop to get this behavior.",
+      "tags": [
+        "loops",
+        "closures"
+      ],
+      "source": {
+        "name": "The Go Blog - Fixing For Loops in Go 1.22",
+        "url": "https://go.dev/blog/loopvar-preview"
+      }
+    },
+    {
+      "id": "go-map-concurrency-006",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Maps are not concurrency-safe",
+      "body": "Built-in maps are unsafe for concurrent use when any goroutine writes; the runtime may detect this and crash with a fatal concurrent map write error. Guard maps with sync.Mutex or sync.RWMutex, or use sync.Map for mostly-append or disjoint-key workloads.",
+      "tags": [
+        "maps",
+        "concurrency"
+      ],
+      "source": {
+        "name": "Go FAQ - Why are map operations not defined to be atomic?",
+        "url": "https://go.dev/doc/faq#atomic_maps"
+      }
+    }
+  ]
+}

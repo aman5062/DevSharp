@@ -1,0 +1,135 @@
+{
+  "schema": 1,
+  "topic": "git",
+  "category": "devops",
+  "name": "Git",
+  "items": [
+    {
+      "id": "git-object-model-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Objects and the commit DAG",
+      "body": "Git is a content-addressed object store: blobs hold file contents, trees map names to blobs and subtrees, and commits point to a tree plus parent commits. Commits form a directed acyclic graph, and branches are just movable refs pointing at commits.",
+      "question": "Why is creating a branch nearly instant?",
+      "answer": "A branch is a tiny ref holding a commit hash; no files or history are copied.",
+      "tags": [
+        "internals",
+        "branches"
+      ],
+      "source": {
+        "name": "Pro Git - Git Objects",
+        "url": "https://git-scm.com/book/en/v2/Git-Internals-Git-Objects"
+      }
+    },
+    {
+      "id": "git-reflog-recovery-002",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Recovering from reset --hard",
+      "question": "You ran git reset --hard HEAD~3 and lost three commits that were never pushed. Are they gone?",
+      "answer": "Usually not. The commits still exist as objects and are recorded in the reflog, which keeps unreachable entries for 30 days by default. Run git reflog to find the previous HEAD, then git reset --hard to that hash or create a branch at it.",
+      "tags": [
+        "recovery",
+        "reflog"
+      ],
+      "source": {
+        "name": "Git docs - git-reflog",
+        "url": "https://git-scm.com/docs/git-reflog"
+      }
+    },
+    {
+      "id": "git-rebase-shared-history-003",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Don't rebase shared commits",
+      "question": "Why should you avoid rebasing commits that others have already based work on?",
+      "answer": "Rebase creates new commits with new hashes while the originals remain in collaborators' clones. When they pull, histories diverge and the same changes appear twice. Rebase local or personal-branch work; use merge or revert on shared branches.",
+      "tags": [
+        "rebase",
+        "collaboration"
+      ],
+      "source": {
+        "name": "Pro Git - Rebasing",
+        "url": "https://git-scm.com/book/en/v2/Git-Branching-Rebasing"
+      }
+    },
+    {
+      "id": "git-force-with-lease-004",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Prefer --force-with-lease",
+      "body": "git push --force-with-lease refuses to overwrite the remote branch if it moved since your last fetch, protecting teammates' pushes that --force would silently destroy. Add --force-if-includes if tools fetch in the background.",
+      "tags": [
+        "push",
+        "collaboration"
+      ],
+      "source": {
+        "name": "Git docs - git-push",
+        "url": "https://git-scm.com/docs/git-push"
+      }
+    },
+    {
+      "id": "git-bisect-run-005",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "Finding a regression in 400 commits",
+      "question": "A performance regression appeared somewhere in the last 400 commits, and you have a script that detects it. What is the fastest way to find the culprit?",
+      "answer": "git bisect: mark one good and one bad commit, then git bisect run ./check.sh, where the script exits 0 for good, non-zero for bad, and 125 to skip untestable commits. Binary search finds the first bad commit in about log2(400), roughly 9 steps.",
+      "tags": [
+        "debugging",
+        "bisect"
+      ],
+      "source": {
+        "name": "Git docs - git-bisect",
+        "url": "https://git-scm.com/docs/git-bisect"
+      }
+    },
+    {
+      "id": "git-revert-006",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Undoing safely with revert",
+      "body": "git revert creates a new commit that undoes an earlier commit's changes without rewriting history, so it is safe on shared branches. Reverting a merge commit requires -m to say which parent is the mainline.",
+      "tags": [
+        "history",
+        "undo"
+      ],
+      "source": {
+        "name": "Git docs - git-revert",
+        "url": "https://git-scm.com/docs/git-revert"
+      }
+    },
+    {
+      "id": "git-leaked-secret-007",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "A key pushed to a public repo",
+      "question": "Someone pushed a commit containing a live API key to a public repository, then pushed another commit deleting it. Is that enough?",
+      "answer": "No. The key remains in history, forks, and clones, and automated scanners harvest public pushes within minutes. Revoke and rotate the key first; then optionally rewrite history with a tool such as git filter-repo and force-push, knowing that existing copies cannot be recalled.",
+      "tags": [
+        "security",
+        "secrets"
+      ],
+      "source": {
+        "name": "GitHub Docs - Removing sensitive data from a repository",
+        "url": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository"
+      }
+    },
+    {
+      "id": "git-no-ff-vs-linear-008",
+      "type": "why",
+      "difficulty": "hard",
+      "title": "Merge commits vs linear history",
+      "question": "Why do some teams require --no-ff merges while others prefer rebase and fast-forward?",
+      "answer": "A fast-forward just moves the branch pointer: history stays linear but loses the record that commits came from one feature. --no-ff always creates a merge commit, grouping the feature so it can be reverted as a unit with git revert -m 1. Linear history is easier to read and bisect; merge commits preserve context.",
+      "tags": [
+        "merge",
+        "workflow"
+      ],
+      "source": {
+        "name": "Git docs - git-merge",
+        "url": "https://git-scm.com/docs/git-merge"
+      }
+    }
+  ]
+}

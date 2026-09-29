@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "topic": "aws",
+  "category": "cloud",
+  "name": "AWS",
+  "items": [
+    {
+      "id": "aws-iam-explicit-deny-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "IAM policy evaluation and explicit deny",
+      "body": "Every request starts as an implicit deny. An allow in an applicable policy is needed to permit it, but any explicit Deny in any applicable policy (identity, resource, SCP, permissions boundary, session policy) overrides every allow. Boundaries and SCPs never grant access; they only cap it.",
+      "question": "A user has AdministratorAccess but an SCP denies s3:DeleteBucket. Can they delete a bucket?",
+      "answer": "No. The explicit deny in the SCP wins over the allow in AdministratorAccess, regardless of how broad the allow is. Only removing or scoping the deny changes the outcome.",
+      "tags": [
+        "iam",
+        "authorization"
+      ],
+      "source": {
+        "name": "AWS docs - IAM policy evaluation logic",
+        "url": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html"
+      }
+    },
+    {
+      "id": "aws-s3-strong-consistency-002",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "S3 is strongly consistent",
+      "body": "Since December 2020, Amazon S3 provides strong read-after-write consistency for PUT and DELETE of objects and for LIST operations, in all Regions, at no extra cost. A GET after a successful PUT returns the new data, so old eventual-consistency workarounds are unnecessary.",
+      "tags": [
+        "s3",
+        "consistency"
+      ],
+      "source": {
+        "name": "AWS docs - What is Amazon S3",
+        "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html"
+      }
+    },
+    {
+      "id": "aws-sqs-visibility-timeout-003",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "SQS messages processed twice",
+      "question": "Your worker takes about 90 seconds per SQS message, and you see many messages processed twice. The queue uses the default settings. What is happening?",
+      "answer": "The default visibility timeout is 30 seconds, so the message becomes visible again while the first worker is still busy and a second worker receives it. Set the timeout above worst-case processing time or extend it with ChangeMessageVisibility as a heartbeat, and make handlers idempotent since standard queues are at-least-once anyway.",
+      "tags": [
+        "sqs",
+        "messaging"
+      ],
+      "source": {
+        "name": "AWS docs - Amazon SQS visibility timeout",
+        "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html"
+      }
+    },
+    {
+      "id": "aws-lambda-vpc-internet-004",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "Lambda in a VPC cannot reach the internet",
+      "question": "After attaching a Lambda function to your VPC so it can reach RDS, its calls to a third-party API time out. You even tried placing it in a public subnet. Why?",
+      "answer": "VPC-attached Lambda functions use ENIs that never get public IP addresses, so an internet gateway route alone does nothing. Put the function in private subnets whose route table points to a NAT gateway, or use VPC endpoints for AWS services such as S3 and DynamoDB to avoid NAT entirely.",
+      "tags": [
+        "lambda",
+        "networking"
+      ],
+      "source": {
+        "name": "AWS docs - Lambda VPC networking",
+        "url": "https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html"
+      }
+    },
+    {
+      "id": "aws-instance-roles-imdsv2-005",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Roles instead of access keys on EC2",
+      "question": "Why should code on EC2 use an instance role instead of access keys in a config file, and why enforce IMDSv2?",
+      "answer": "An instance role gives temporary credentials via the instance metadata service that the SDK rotates automatically, so no long-lived key can leak from disk or a repo. IMDSv2 requires a session token obtained with a PUT request, which blocks the classic SSRF trick of making the server GET 169.254.169.254 and returning the role credentials.",
+      "tags": [
+        "iam",
+        "ec2",
+        "security"
+      ],
+      "source": {
+        "name": "AWS docs - Configure the instance metadata service",
+        "url": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html"
+      }
+    },
+    {
+      "id": "aws-sqs-fifo-dedup-006",
+      "type": "fact",
+      "difficulty": "hard",
+      "title": "SQS FIFO deduplication window",
+      "body": "FIFO queues drop a message whose deduplication ID matches one sent within the last 5 minutes, and preserve order per message group ID. Standard queues give at-least-once delivery and best-effort ordering, so consumers must tolerate duplicates.",
+      "tags": [
+        "sqs",
+        "messaging"
+      ],
+      "source": {
+        "name": "AWS docs - Amazon SQS FIFO queues",
+        "url": "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-fifo-queues.html"
+      }
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "topic": "caching",
+  "category": "system-design",
+  "name": "Caching",
+  "items": [
+    {
+      "id": "caching-cache-aside-vs-write-through-001",
+      "type": "concept",
+      "difficulty": "easy",
+      "title": "Cache-aside vs write-through",
+      "body": "In cache-aside the application reads the cache, loads from the database on a miss, and fills the cache. In write-through every write goes to the cache and the database together, so reads are warm but you pay on writes and cache data that may never be read.",
+      "tags": [
+        "patterns",
+        "consistency"
+      ],
+      "source": {
+        "name": "AWS Builders Library - Caching challenges and strategies",
+        "url": "https://aws.amazon.com/builders-library/caching-challenges-and-strategies/"
+      }
+    },
+    {
+      "id": "caching-node-redis-postgres-002",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Where to cache in Node, Redis, Postgres",
+      "question": "You have Node.js to Redis to PostgreSQL. Where would you introduce caching and why?",
+      "answer": "Cache-aside in Redis for expensive or hot reads that tolerate brief staleness, keyed by query inputs with a TTL, and invalidated on writes. Add a small in-process LRU in Node only for tiny, very hot, rarely changing data, since each instance holds its own copy. Fix slow queries with indexes first; a cache should not hide them.",
+      "tags": [
+        "architecture",
+        "redis"
+      ],
+      "source": {
+        "name": "AWS Builders Library - Caching challenges and strategies",
+        "url": "https://aws.amazon.com/builders-library/caching-challenges-and-strategies/"
+      }
+    },
+    {
+      "id": "caching-stampede-003",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "Cache stampede on a hot key",
+      "question": "A popular key expires and 5,000 requests miss at once, all querying the database. How do you prevent this?",
+      "answer": "Let only one request recompute the value (a per-key lock or request coalescing) while others wait or get the stale value. Alternatively refresh early before expiry, probabilistically or in the background, and serve stale on error.",
+      "tags": [
+        "stampede",
+        "thundering-herd"
+      ],
+      "source": {
+        "name": "AWS Builders Library - Caching challenges and strategies",
+        "url": "https://aws.amazon.com/builders-library/caching-challenges-and-strategies/"
+      }
+    },
+    {
+      "id": "caching-ttl-jitter-004",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Add jitter to TTLs",
+      "body": "Keys written together with the same TTL expire together, producing synchronized miss spikes. Adding a random offset, for example a TTL of 600 seconds plus or minus 10 percent, spreads expirations out.",
+      "tags": [
+        "ttl",
+        "thundering-herd"
+      ],
+      "source": {
+        "name": "AWS Builders Library - Caching challenges and strategies",
+        "url": "https://aws.amazon.com/builders-library/caching-challenges-and-strategies/"
+      }
+    },
+    {
+      "id": "caching-delete-not-set-005",
+      "type": "why",
+      "difficulty": "hard",
+      "title": "Why delete the key instead of updating it",
+      "question": "Why do many cache-aside systems delete the cache key after a database write instead of writing the new value into the cache?",
+      "answer": "Two concurrent writers can update the database in one order and the cache in the other, leaving a stale value with no expiry in sight. Deleting forces the next read to load the committed row. Races remain (a slow reader can refill an old value), so still set a TTL as a safety net.",
+      "tags": [
+        "invalidation",
+        "consistency"
+      ],
+      "source": {
+        "name": "AWS Builders Library - Caching challenges and strategies",
+        "url": "https://aws.amazon.com/builders-library/caching-challenges-and-strategies/"
+      }
+    },
+    {
+      "id": "caching-http-cache-control-006",
+      "type": "why",
+      "difficulty": "easy",
+      "title": "Why no-cache does not mean do not store",
+      "question": "Why does Cache-Control: no-cache still let browsers store the response?",
+      "answer": "no-cache means a stored response must be revalidated with the origin (for example via ETag and If-None-Match) before reuse. To forbid storage entirely use no-store, which is what sensitive responses need.",
+      "tags": [
+        "http",
+        "browser"
+      ],
+      "source": {
+        "name": "RFC 9111 - HTTP Caching",
+        "url": "https://www.rfc-editor.org/rfc/rfc9111"
+      }
+    }
+  ]
+}

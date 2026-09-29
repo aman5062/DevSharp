@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "topic": "tcp",
+  "category": "networking",
+  "name": "TCP",
+  "items": [
+    {
+      "id": "tcp-three-way-handshake-001",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "The TCP three-way handshake",
+      "body": "A connection opens with SYN, SYN-ACK, ACK, exchanging randomized initial sequence numbers. It costs one round trip before the client can send data, which is why connection reuse matters for latency.",
+      "tags": [
+        "handshake",
+        "latency"
+      ],
+      "source": {
+        "name": "RFC 9293 - TCP",
+        "url": "https://www.rfc-editor.org/rfc/rfc9293"
+      }
+    },
+    {
+      "id": "tcp-time-wait-002",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "TIME_WAIT and who closes first",
+      "body": "The side that actively closes a connection stays in TIME_WAIT for 2*MSL (60 seconds on Linux) so the final ACK can be retransmitted and stray old segments cannot corrupt a new connection with the same 4-tuple. It is normal, not a leak.",
+      "question": "A client opening a new connection per request starts failing with EADDRNOTAVAIL. Why?",
+      "answer": "Thousands of sockets sit in TIME_WAIT, each holding an ephemeral port toward the same destination, until the range is exhausted. Reuse connections with keep-alive or a pool instead of tuning TIME_WAIT away.",
+      "tags": [
+        "connection-lifecycle"
+      ],
+      "source": {
+        "name": "RFC 9293 - TCP",
+        "url": "https://www.rfc-editor.org/rfc/rfc9293"
+      }
+    },
+    {
+      "id": "tcp-nagle-delayed-ack-003",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "A mysterious 40 ms latency",
+      "question": "A client sends a request as two small writes (header, then body) and waits for a reply. Each call takes an extra 40 ms on Linux. What is happening?",
+      "answer": "Nagle holds the second small write until the first is ACKed, while the server delays its ACK hoping to piggyback on a response, so both wait for the delayed-ACK timer. Coalesce writes into one send, or set TCP_NODELAY for latency-sensitive request/response protocols.",
+      "tags": [
+        "latency",
+        "nagle"
+      ],
+      "source": {
+        "name": "Linux man-pages - tcp(7)",
+        "url": "https://man7.org/linux/man-pages/man7/tcp.7.html"
+      }
+    },
+    {
+      "id": "tcp-head-of-line-blocking-004",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "HTTP/2 stalls on lossy networks",
+      "question": "Your HTTP/2 app multiplexes many streams on one TCP connection and performs worse than HTTP/1.1 on lossy mobile networks. Why?",
+      "answer": "TCP delivers bytes strictly in order, so one lost packet blocks delivery of every stream behind it until it is retransmitted: head-of-line blocking. HTTP/3 runs over QUIC, which does loss recovery per stream, so a loss only stalls the affected stream.",
+      "tags": [
+        "http2",
+        "quic"
+      ],
+      "source": {
+        "name": "RFC 9000 - QUIC",
+        "url": "https://www.rfc-editor.org/rfc/rfc9000"
+      }
+    },
+    {
+      "id": "tcp-slow-start-005",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Why new connections start slow",
+      "question": "Why does a fresh TCP connection on a fast link not transfer at full speed immediately?",
+      "answer": "Congestion control starts with a small congestion window (commonly 10 segments) and roughly doubles it each RTT during slow start until loss or a threshold. Short transfers finish before the window grows, so reusing warm connections and cutting round trips often matters more than bandwidth.",
+      "tags": [
+        "congestion-control",
+        "performance"
+      ],
+      "source": {
+        "name": "RFC 5681 - TCP Congestion Control",
+        "url": "https://www.rfc-editor.org/rfc/rfc5681"
+      }
+    },
+    {
+      "id": "tcp-byte-stream-006",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "TCP has no message boundaries",
+      "body": "TCP is a byte stream: one send may arrive split across several reads, and several sends may arrive in one read. Applications must frame messages themselves, with length prefixes or delimiters.",
+      "tags": [
+        "framing",
+        "sockets"
+      ],
+      "source": {
+        "name": "RFC 9293 - TCP",
+        "url": "https://www.rfc-editor.org/rfc/rfc9293"
+      }
+    }
+  ]
+}

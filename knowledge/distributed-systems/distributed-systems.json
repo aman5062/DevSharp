@@ -1,0 +1,119 @@
+{
+  "schema": 1,
+  "topic": "distributed-systems",
+  "category": "distributed-systems",
+  "name": "Distributed Systems",
+  "items": [
+    {
+      "id": "distributed-systems-cap-pacelc-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "CAP and PACELC",
+      "body": "CAP says that during a network partition a system must choose between consistency and availability. PACELC adds that even with no partition (Else), there is a trade-off between latency and consistency, which is the choice systems make most of the time.",
+      "question": "Think: a primary with asynchronous replicas serves some reads from replicas. Where does it sit in PACELC?",
+      "answer": "PC/EL. During a partition, a cut-off primary cannot accept writes safely without risking split-brain, so it chooses consistency (PC). Normally it trades consistency for latency (EL): replica reads are fast but may be stale because replication is asynchronous.",
+      "tags": [
+        "cap",
+        "consistency"
+      ],
+      "source": {
+        "name": "Abadi - Consistency Tradeoffs in Modern Distributed Database System Design",
+        "url": "https://www.cs.umd.edu/~abadi/papers/abadi-pacelc.pdf"
+      }
+    },
+    {
+      "id": "distributed-systems-exactly-once-002",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Exactly-once is at-least-once plus dedupe",
+      "body": "Networks can lose acknowledgements, so a sender cannot know whether a message was processed and must retry. Exactly-once effects come from at-least-once delivery combined with idempotent processing or deduplication by a unique message ID.",
+      "tags": [
+        "messaging",
+        "idempotency"
+      ],
+      "source": {
+        "name": "AWS Builders Library - Making retries safe with idempotent APIs",
+        "url": "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/"
+      }
+    },
+    {
+      "id": "distributed-systems-idempotency-key-003",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Double charges on retry",
+      "question": "A payment API call times out on the client, the client retries, and the customer is charged twice. How do you fix it?",
+      "answer": "Have the client generate an idempotency key per logical operation and send it with every retry. The server stores the key with the result atomically and returns the stored result for repeats instead of charging again, rejecting the same key with different parameters.",
+      "tags": [
+        "idempotency",
+        "retries"
+      ],
+      "source": {
+        "name": "AWS Builders Library - Making retries safe with idempotent APIs",
+        "url": "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/"
+      }
+    },
+    {
+      "id": "distributed-systems-backoff-jitter-004",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "Retries that make an outage worse",
+      "question": "A dependency blips for two seconds, and every client retries immediately three times. The dependency stays down for ten minutes. What went wrong?",
+      "answer": "Synchronized immediate retries multiplied load exactly when capacity was lowest, and retries at each layer compound. Use capped exponential backoff with jitter so retries spread out, limit attempts, retry at only one layer, and use a retry budget or token bucket to cap retry traffic.",
+      "tags": [
+        "retries",
+        "resilience"
+      ],
+      "source": {
+        "name": "AWS Builders Library - Timeouts, retries, and backoff with jitter",
+        "url": "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/"
+      }
+    },
+    {
+      "id": "distributed-systems-lamport-clocks-005",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Why wall clocks cannot order events",
+      "question": "Why do distributed systems use logical clocks instead of comparing wall-clock timestamps?",
+      "answer": "Machine clocks drift and get stepped by NTP, so a later event can carry an earlier timestamp. A Lamport clock increments a counter on every event and takes max(local, received) + 1 on receive, guaranteeing that if A happened-before B then A has the smaller value. The reverse does not hold; vector clocks detect concurrency.",
+      "tags": [
+        "clocks",
+        "ordering"
+      ],
+      "source": {
+        "name": "Lamport - Time, Clocks, and the Ordering of Events",
+        "url": "https://lamport.azurewebsites.net/pubs/time-clocks.pdf"
+      }
+    },
+    {
+      "id": "distributed-systems-raft-quorum-006",
+      "type": "concept",
+      "difficulty": "hard",
+      "title": "Raft and majority quorums",
+      "body": "Raft elects one leader per term; the leader appends entries and commits them once a majority of servers have stored them. Any two majorities overlap, so a new leader always has every committed entry. A 5-node cluster tolerates 2 failures; 4 nodes still only tolerate 1.",
+      "tags": [
+        "consensus",
+        "raft"
+      ],
+      "source": {
+        "name": "The Raft Consensus Algorithm",
+        "url": "https://raft.github.io/"
+      }
+    },
+    {
+      "id": "distributed-systems-circuit-breaker-007",
+      "type": "why",
+      "difficulty": "easy",
+      "title": "Why use a circuit breaker",
+      "question": "Why wrap calls to a failing downstream service in a circuit breaker rather than just using timeouts?",
+      "answer": "With only timeouts every request still waits the full timeout, tying up threads and connections and hammering a service that is already struggling. A breaker trips open after repeated failures and fails fast, then lets a trial request through (half-open) to detect recovery.",
+      "tags": [
+        "resilience",
+        "patterns"
+      ],
+      "source": {
+        "name": "Martin Fowler - CircuitBreaker",
+        "url": "https://martinfowler.com/bliki/CircuitBreaker.html"
+      }
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "schema": 1,
+  "topic": "nodejs",
+  "category": "backend",
+  "name": "Node.js",
+  "items": [
+    {
+      "id": "nodejs-event-loop-phases-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Event loop phases",
+      "body": "Node's event loop cycles through phases: timers, pending callbacks, poll (I/O), check (setImmediate), and close callbacks. process.nextTick callbacks and promise microtasks run after each callback before the loop moves on, with the nextTick queue drained first.",
+      "question": "Inside an I/O callback, which runs first: setTimeout(fn, 0) or setImmediate(fn)?",
+      "answer": "setImmediate. After the poll phase the loop enters the check phase, and timers are only examined on the next iteration. Outside an I/O callback, the order of the two is not guaranteed.",
+      "tags": [
+        "event-loop",
+        "async"
+      ],
+      "source": {
+        "name": "Node.js - The Event Loop, Timers, and process.nextTick()",
+        "url": "https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick"
+      }
+    },
+    {
+      "id": "nodejs-blocking-json-parse-002",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "One big request stalls everyone",
+      "question": "A Node API is fast until one client uploads a 50 MB JSON body; then every request stalls for seconds. Why, and what do you do?",
+      "answer": "JSON.parse is synchronous and CPU-bound on the single main thread, so nothing else runs while it works. Enforce body size limits, stream-parse large payloads, or move heavy CPU work to worker_threads. Monitor event loop delay (perf_hooks.monitorEventLoopDelay) as a health signal.",
+      "tags": [
+        "event-loop",
+        "performance"
+      ],
+      "source": {
+        "name": "Node.js - Don't Block the Event Loop",
+        "url": "https://nodejs.org/en/learn/asynchronous-work/dont-block-the-event-loop"
+      }
+    },
+    {
+      "id": "nodejs-libuv-threadpool-003",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "The libuv threadpool",
+      "body": "libuv's threadpool, 4 threads by default, runs fs operations, dns.lookup, and some crypto and zlib work. Saturating it, for example with many concurrent pbkdf2 calls, delays unrelated file and DNS operations; UV_THREADPOOL_SIZE changes its size at startup.",
+      "tags": [
+        "libuv",
+        "performance"
+      ],
+      "source": {
+        "name": "Node.js CLI docs - UV_THREADPOOL_SIZE",
+        "url": "https://nodejs.org/api/cli.html#uv_threadpool_sizesize"
+      }
+    },
+    {
+      "id": "nodejs-stream-backpressure-004",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Ignoring backpressure",
+      "question": "You stream a fast database cursor into a slow HTTP response by calling res.write() in a loop, and memory climbs until the process crashes. What was ignored?",
+      "answer": "write() returns false once the stream's buffer exceeds highWaterMark, and the producer should pause until the 'drain' event. Ignoring it buffers everything in memory. Use stream.pipeline(), which handles backpressure and cleans up on errors.",
+      "tags": [
+        "streams",
+        "memory"
+      ],
+      "source": {
+        "name": "Node.js - Backpressuring in Streams",
+        "url": "https://nodejs.org/en/learn/modules/backpressuring-in-streams"
+      }
+    },
+    {
+      "id": "nodejs-unhandled-rejections-005",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Unhandled rejections crash",
+      "question": "Why does an unhandled promise rejection terminate a modern Node process?",
+      "answer": "The default --unhandled-rejections mode is throw: an unhandled rejection is raised as an uncaught exception, which exits the process. Silently ignored rejections had hidden real failures and left state inconsistent. Always await or attach a catch, and use process-level handlers only for last-resort logging before exit.",
+      "tags": [
+        "errors",
+        "promises"
+      ],
+      "source": {
+        "name": "Node.js CLI docs - --unhandled-rejections",
+        "url": "https://nodejs.org/api/cli.html#--unhandled-rejectionsmode"
+      }
+    },
+    {
+      "id": "nodejs-workers-vs-processes-006",
+      "type": "why",
+      "difficulty": "hard",
+      "title": "Worker threads vs processes",
+      "question": "Why use worker_threads for CPU-heavy tasks but multiple processes or containers to scale an HTTP server?",
+      "answer": "Worker threads live in one process and can transfer or share memory (ArrayBuffer, SharedArrayBuffer) cheaply, which suits offloading computation. Separate processes have isolated heaps, event loops, and failure domains, so a crash or long GC pause in one does not stop the others from serving connections.",
+      "tags": [
+        "scaling",
+        "workers"
+      ],
+      "source": {
+        "name": "Node.js docs - Worker threads",
+        "url": "https://nodejs.org/api/worker_threads.html"
+      }
+    },
+    {
+      "id": "nodejs-http-keepalive-007",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Connection reuse for outbound calls",
+      "question": "A service calling an internal API shows high latency and thousands of sockets in TIME_WAIT. Which client setting is suspect?",
+      "answer": "Connections are not being reused, so each request pays a TCP and possibly TLS handshake and leaves a TIME_WAIT socket behind. Enable keep-alive pooling (http.Agent with keepAlive, or the pooled undici dispatcher behind fetch), reuse one agent per upstream, and cap maxSockets.",
+      "tags": [
+        "http",
+        "performance"
+      ],
+      "source": {
+        "name": "Node.js docs - http.Agent",
+        "url": "https://nodejs.org/api/http.html#class-httpagent"
+      }
+    },
+    {
+      "id": "nodejs-esm-vs-cjs-008",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "ESM vs CommonJS",
+      "body": "Node treats .mjs files, and .js files under a package.json with \"type\": \"module\", as ES modules; .cjs and other .js files are CommonJS. ES modules have no require, __dirname, or __filename; use import.meta.dirname or import.meta.url instead.",
+      "tags": [
+        "modules"
+      ],
+      "source": {
+        "name": "Node.js docs - ECMAScript modules",
+        "url": "https://nodejs.org/api/esm.html"
+      }
+    }
+  ]
+}

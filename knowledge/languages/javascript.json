@@ -1,0 +1,136 @@
+{
+  "schema": 1,
+  "topic": "javascript",
+  "category": "languages",
+  "name": "JavaScript",
+  "items": [
+    {
+      "id": "javascript-event-loop-order-001",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Microtasks vs timers",
+      "question": "What does this log? console.log('A'); setTimeout(() => console.log('B'), 0); Promise.resolve().then(() => console.log('C')); console.log('D');",
+      "answer": "A, D, C, B. Synchronous code runs first. Promise reactions are microtasks, and the microtask queue is drained completely after the current task finishes, before the event loop picks the next task. The setTimeout callback is a separate task, so it runs after C even with a 0 ms delay.",
+      "tags": [
+        "event-loop",
+        "async",
+        "promises"
+      ],
+      "source": {
+        "name": "MDN - JavaScript execution model",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Execution_model"
+      }
+    },
+    {
+      "id": "javascript-microtask-starvation-002",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Microtask starvation",
+      "body": "Because the microtask queue is drained until empty before rendering or the next task, a microtask that keeps scheduling more microtasks (for example a recursive promise chain) can starve timers, I/O callbacks, and page rendering.",
+      "question": "How would you yield to the event loop inside a long chunked async job?",
+      "answer": "Schedule the continuation as a new task instead of a microtask, for example with setTimeout or a MessageChannel in browsers, or setImmediate in Node, so rendering and other tasks can run between chunks.",
+      "tags": [
+        "event-loop",
+        "performance"
+      ],
+      "source": {
+        "name": "MDN - JavaScript execution model",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Execution_model"
+      }
+    },
+    {
+      "id": "javascript-safe-integer-003",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Numbers are doubles",
+      "body": "JavaScript numbers are IEEE 754 double-precision floats, so integers are exact only up to Number.MAX_SAFE_INTEGER (2^53 - 1). Beyond that, adjacent integers collapse; use BigInt or strings for large IDs such as 64-bit database keys.",
+      "tags": [
+        "numbers",
+        "gotcha"
+      ],
+      "source": {
+        "name": "MDN - Number.MAX_SAFE_INTEGER",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER"
+      }
+    },
+    {
+      "id": "javascript-default-sort-004",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Default sort is lexicographic",
+      "question": "Why does [10, 9, 1].sort() return [1, 10, 9]?",
+      "answer": "Without a comparator, Array.prototype.sort converts elements to strings and compares them by UTF-16 code unit order, so '10' sorts before '9'. Pass a comparator such as (a, b) => a - b for numbers. Note that sort mutates the array in place; toSorted returns a sorted copy.",
+      "tags": [
+        "arrays",
+        "gotcha"
+      ],
+      "source": {
+        "name": "MDN - Array.prototype.sort",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort"
+      }
+    },
+    {
+      "id": "javascript-closure-loop-binding-005",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "var vs let in loops",
+      "question": "for (var i = 0; i < 3; i++) setTimeout(() => console.log(i)); prints 3, 3, 3. Changing var to let prints 0, 1, 2. What exactly changed?",
+      "answer": "var is function-scoped, so all three closures capture the same binding, which is 3 by the time the timers run. let in a for-loop head creates a fresh binding for each iteration (initialized from the previous one), so each closure captures its own. Closures capture variables, not values.",
+      "tags": [
+        "closures",
+        "scope"
+      ],
+      "source": {
+        "name": "MDN - Closures",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures"
+      }
+    },
+    {
+      "id": "javascript-this-binding-006",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Losing this in callbacks",
+      "question": "Why does passing obj.method as a callback lose this, while an arrow function defined as a class field keeps it?",
+      "answer": "For regular functions, this is determined by how the function is called; a detached reference called as plain f() gets undefined in strict mode (all class and module code). Arrow functions have no own this and use the lexical this where they were created, so a class-field arrow is bound to the instance. Alternatively use obj.method.bind(obj).",
+      "tags": [
+        "this",
+        "functions"
+      ],
+      "source": {
+        "name": "MDN - this",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this"
+      }
+    },
+    {
+      "id": "javascript-promise-all-settled-007",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Promise.all fails fast",
+      "question": "You fire 5 independent API calls and want to render whatever succeeds. A teammate uses await Promise.all(calls). What goes wrong?",
+      "answer": "Promise.all rejects as soon as any input rejects, so one failure discards all successful results. The other requests keep running; nothing is cancelled. Use Promise.allSettled to get a status and value or reason per promise, and use AbortController if you actually need to stop the remaining requests.",
+      "tags": [
+        "promises",
+        "async"
+      ],
+      "source": {
+        "name": "MDN - Promise.allSettled",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled"
+      }
+    },
+    {
+      "id": "javascript-temporal-dead-zone-008",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Temporal dead zone",
+      "body": "let, const, and class declarations are hoisted but not initialized: accessing them before the declaration runs throws a ReferenceError. This region is the temporal dead zone, unlike var, which is initialized to undefined at the top of its function.",
+      "tags": [
+        "scope",
+        "hoisting"
+      ],
+      "source": {
+        "name": "MDN - let",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let"
+      }
+    }
+  ]
+}

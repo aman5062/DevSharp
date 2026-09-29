@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "topic": "rust",
+  "category": "languages",
+  "name": "Rust",
+  "items": [
+    {
+      "id": "rust-ownership-moves-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Ownership and moves",
+      "body": "Every Rust value has a single owner, and the value is dropped when its owner goes out of scope. Assigning or passing a non-Copy value moves ownership, and the old binding can no longer be used. This gives deterministic cleanup without a garbage collector.",
+      "question": "Why is let t = s; followed by using s an error for String but fine for i32?",
+      "answer": "i32 implements Copy, so assignment duplicates the bits. String owns a heap buffer; copying just the pointer would create two owners and a double free, so it moves instead. Use s.clone() for an explicit deep copy, or borrow with &s.",
+      "tags": [
+        "ownership",
+        "memory"
+      ],
+      "source": {
+        "name": "The Rust Book - What Is Ownership?",
+        "url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html"
+      }
+    },
+    {
+      "id": "rust-borrow-rules-002",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Shared XOR mutable",
+      "question": "Why does Rust forbid a &mut reference while any & reference to the same value is still in use?",
+      "answer": "Aliasing combined with mutation causes data races and invalidated references, for example a Vec reallocating while someone holds a pointer into it. Allowing either many shared references or exactly one exclusive reference lets the compiler prove memory safety statically, at zero runtime cost.",
+      "tags": [
+        "borrowing",
+        "safety"
+      ],
+      "source": {
+        "name": "The Rust Book - References and Borrowing",
+        "url": "https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html"
+      }
+    },
+    {
+      "id": "rust-vec-push-borrow-003",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "Borrowing an element, then pushing",
+      "question": "let first = &v[0]; v.push(4); then printing first fails to compile. The code looks harmless. What bug is the compiler preventing?",
+      "answer": "push may reallocate the vector buffer when capacity is exceeded, moving every element to new memory, so first would point into freed memory. The borrow checker sees a shared borrow alive across a mutable one and rejects it. Copy the value (let first = v[0]) or finish using the reference before pushing.",
+      "tags": [
+        "borrowing",
+        "collections"
+      ],
+      "source": {
+        "name": "The Rust Book - Storing Lists of Values with Vectors",
+        "url": "https://doc.rust-lang.org/book/ch08-01-vectors.html"
+      }
+    },
+    {
+      "id": "rust-arc-mutex-sharing-004",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Sharing config across threads",
+      "question": "You need shared ownership of a config object across several threads, with occasional updates. Which types do you reach for?",
+      "answer": "Arc for shared ownership across threads, since Rc is not Send. For mutation add a lock: Arc<RwLock<Config>> or Arc<Mutex<Config>>. For rarely changing config, a Mutex<Arc<Config>> whose inner Arc is cloned by readers keeps lock hold times tiny, and updates swap in a new Arc.",
+      "tags": [
+        "concurrency",
+        "smart-pointers"
+      ],
+      "source": {
+        "name": "Rust std - Arc",
+        "url": "https://doc.rust-lang.org/std/sync/struct.Arc.html"
+      }
+    },
+    {
+      "id": "rust-question-mark-operator-005",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "The ? operator",
+      "body": "The ? operator returns early with the error from a Result (or None from an Option), converting the error type through the From trait. Error propagation stays explicit in function signatures without exceptions.",
+      "tags": [
+        "errors"
+      ],
+      "source": {
+        "name": "The Rust Book - Recoverable Errors with Result",
+        "url": "https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html"
+      }
+    },
+    {
+      "id": "rust-send-sync-006",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Send and Sync",
+      "body": "Send means a value can be moved to another thread; Sync means &T can be shared between threads. The compiler derives them automatically from field types, which is why Rc is neither Send nor Sync and RefCell is not Sync, while Arc<Mutex<T>> can be shared.",
+      "tags": [
+        "concurrency",
+        "traits"
+      ],
+      "source": {
+        "name": "Rust std - Sync trait",
+        "url": "https://doc.rust-lang.org/std/marker/trait.Sync.html"
+      }
+    }
+  ]
+}

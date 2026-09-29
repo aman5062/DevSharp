@@ -1,0 +1,22 @@
+{
+  "name": "devsharp",
+  "version": "0.1.0",
+  "description": "A zero-token learning companion for Claude Code: short technology facts, Think First questions and tech updates between AI turns.",
+  "license": "MIT",
+  "author": "Aman (https://github.com/aman5062)",
+  "homepage": "https://github.com/aman5062/DevSharp",
+  "repository": { "type": "git", "url": "git+https://github.com/aman5062/DevSharp.git" },
+  "bugs": "https://github.com/aman5062/DevSharp/issues",
+  "keywords": ["claude-code", "claude-code-plugin", "learning", "developer-education", "cli", "offline"],
+  "bin": { "devsharp": "cli/devsharp.js" },
+  "main": "src/core/engine.js",
+  "engines": { "node": ">=18" },
+  "files": [".claude-plugin", "hooks", "commands", "cli", "src", "knowledge", "updates", "examples", "docs", "README.md", "LICENSE", "CHANGELOG.md", "SECURITY.md"],
+  "scripts": {
+    "test": "node --test",
+    "validate": "node scripts/validate-packs.js",
+    "build:index": "node scripts/build-index.js",
+    "bench": "node scripts/bench.js",
+    "verify:zero-tokens": "node scripts/verify-zero-tokens.js"
+  }
+}

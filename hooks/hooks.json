@@ -1,0 +1,17 @@
+{
+  "description": "DevSharp: zero-token learning cards. All hooks are synchronous on purpose (async hook output is delivered to Claude).",
+  "hooks": {
+    "SessionStart": [
+      { "matcher": "startup|resume|clear", "hooks": [ { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/src/claude/hook.js", "session-start"], "timeout": 5 } ] }
+    ],
+    "UserPromptSubmit": [
+      { "hooks": [ { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/src/claude/hook.js", "prompt"], "timeout": 10 } ] }
+    ],
+    "Stop": [
+      { "hooks": [ { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/src/claude/hook.js", "stop"], "timeout": 10 } ] }
+    ],
+    "SessionEnd": [
+      { "hooks": [ { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/src/claude/hook.js", "session-end"], "timeout": 2 } ] }
+    ]
+  }
+}

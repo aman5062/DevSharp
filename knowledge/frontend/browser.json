@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "topic": "browser",
+  "category": "frontend",
+  "name": "Browser",
+  "items": [
+    {
+      "id": "browser-rendering-pipeline-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Style, layout, paint, composite",
+      "body": "After building the DOM and CSSOM, the browser computes styles, runs layout to compute geometry, paints pixels, and composites layers. Changing geometry triggers layout and paint; changing only transform or opacity can often be handled by the compositor alone.",
+      "question": "Why animate transform instead of top or left?",
+      "answer": "top and left affect layout, forcing layout and paint on the main thread every frame. transform can usually be composited on the GPU, so the animation stays smooth even when the main thread is busy.",
+      "tags": [
+        "rendering",
+        "performance"
+      ],
+      "source": {
+        "name": "web.dev - Rendering performance",
+        "url": "https://web.dev/articles/rendering-performance"
+      }
+    },
+    {
+      "id": "browser-layout-thrashing-002",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "Layout thrashing",
+      "question": "A loop sets el.style.width on 500 elements and reads el.offsetWidth right after each write. The page freezes. Why?",
+      "answer": "Reading a layout property after a style change forces a synchronous layout so the value is correct. Interleaving writes and reads forces up to 500 layouts. Do all reads first, then all writes, or defer the writes to requestAnimationFrame.",
+      "tags": [
+        "rendering",
+        "performance"
+      ],
+      "source": {
+        "name": "web.dev - Avoid large, complex layouts and layout thrashing",
+        "url": "https://web.dev/articles/avoid-large-complex-layouts-and-layout-thrashing"
+      }
+    },
+    {
+      "id": "browser-cors-browser-only-003",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "CORS errors but curl works",
+      "question": "Why does a cross-origin fetch fail with a CORS error in the browser when the same request works with curl?",
+      "answer": "CORS is enforced by browsers. The same-origin policy stops page scripts from reading cross-origin responses unless the server opts in with Access-Control-Allow-Origin, and non-simple requests first need a successful OPTIONS preflight. curl has no page origin to protect. CORS is not an authentication mechanism.",
+      "tags": [
+        "cors",
+        "security"
+      ],
+      "source": {
+        "name": "MDN - Cross-Origin Resource Sharing (CORS)",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS"
+      }
+    },
+    {
+      "id": "browser-samesite-cookies-004",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "SameSite cookies",
+      "body": "Cookies with SameSite=Lax are not sent on cross-site subrequests such as images or fetch calls, but are sent on top-level GET navigations. Chromium browsers treat cookies without a SameSite attribute as Lax, and SameSite=None requires Secure.",
+      "tags": [
+        "cookies",
+        "security"
+      ],
+      "source": {
+        "name": "MDN - Set-Cookie",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie"
+      }
+    },
+    {
+      "id": "browser-defer-vs-async-005",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "defer or async?",
+      "question": "You load analytics, a framework bundle, and app code that depends on the framework. Which scripts get async and which get defer?",
+      "answer": "defer scripts download in parallel and execute in document order after parsing, so the framework and app code should use defer (or type=module, which defers by default). async scripts execute as soon as they arrive, in any order, which suits independent scripts such as analytics.",
+      "tags": [
+        "loading",
+        "performance"
+      ],
+      "source": {
+        "name": "MDN - The script element",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script"
+      }
+    },
+    {
+      "id": "browser-localstorage-limits-006",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "localStorage trade-offs",
+      "body": "localStorage is synchronous, string-only, per-origin, and usually limited to a few megabytes; large reads and writes block the main thread. Any script on the page can read it, so it is a poor place for auth tokens. Use IndexedDB for larger structured data.",
+      "tags": [
+        "storage",
+        "security"
+      ],
+      "source": {
+        "name": "MDN - Window.localStorage",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage"
+      }
+    }
+  ]
+}

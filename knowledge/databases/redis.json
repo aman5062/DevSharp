@@ -1,0 +1,135 @@
+{
+  "schema": 1,
+  "topic": "redis",
+  "category": "databases",
+  "name": "Redis",
+  "items": [
+    {
+      "id": "redis-rdb-aof-persistence-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "RDB and AOF persistence",
+      "body": "RDB writes point-in-time snapshots from a forked child: compact and fast to restore, but writes since the last snapshot are lost on a crash. AOF logs every write; with appendfsync everysec you lose at most about one second of writes. Many deployments enable both.",
+      "question": "What does fork-based snapshotting imply for memory sizing?",
+      "answer": "The child shares pages with the parent via copy-on-write, but every page the parent modifies during the snapshot is duplicated. Under heavy writes, memory usage can grow substantially during a save, so leave headroom.",
+      "tags": [
+        "persistence",
+        "durability"
+      ],
+      "source": {
+        "name": "Redis docs - Persistence",
+        "url": "https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/"
+      }
+    },
+    {
+      "id": "redis-cache-stampede-002",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "Hot key expiry stampede",
+      "question": "A hot key with a 60 s TTL expires and 2,000 requests hit PostgreSQL at once to rebuild it, spiking latency. What are your options?",
+      "answer": "Let one request rebuild while others wait briefly or serve stale data: take a short lock with SET lockkey token NX PX 5000, refresh early before expiry, or keep a stale copy with a soft TTL and refresh in the background. Add jitter to TTLs so many keys do not expire together.",
+      "tags": [
+        "caching",
+        "stampede"
+      ],
+      "source": {
+        "name": "Redis docs - SET command",
+        "url": "https://redis.io/docs/latest/commands/set/"
+      }
+    },
+    {
+      "id": "redis-keys-vs-scan-003",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Never KEYS in production",
+      "body": "KEYS walks the entire keyspace in a single blocking call; on a large instance it stalls every client because commands execute on one thread. Use SCAN, which iterates incrementally with a cursor and may return some keys more than once.",
+      "tags": [
+        "operations",
+        "performance"
+      ],
+      "source": {
+        "name": "Redis docs - SCAN command",
+        "url": "https://redis.io/docs/latest/commands/scan/"
+      }
+    },
+    {
+      "id": "redis-single-threaded-speed-004",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Fast on a single thread",
+      "question": "Why is Redis fast even though it executes commands on a single thread?",
+      "answer": "Data lives in memory in efficient structures, most commands are O(1) or O(log N), and one execution thread avoids lock contention. The usual bottleneck is network round trips, which pipelining reduces. Newer versions can use I/O threads for socket work while command execution stays single-threaded.",
+      "tags": [
+        "performance",
+        "architecture"
+      ],
+      "source": {
+        "name": "Redis docs - Pipelining",
+        "url": "https://redis.io/docs/latest/develop/use/pipelining/"
+      }
+    },
+    {
+      "id": "redis-eviction-policy-005",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "OOM errors in a cache",
+      "question": "Redis is used as a cache, reaches maxmemory, and writes start failing with OOM errors. What configuration is likely wrong?",
+      "answer": "maxmemory-policy is noeviction, the default, which rejects writes when memory is full. For a cache use allkeys-lru or allkeys-lfu; volatile-* policies only evict keys that have a TTL. If the instance also holds data that must never be evicted, split it into a separate instance.",
+      "tags": [
+        "eviction",
+        "caching"
+      ],
+      "source": {
+        "name": "Redis docs - Key eviction",
+        "url": "https://redis.io/docs/latest/develop/reference/eviction/"
+      }
+    },
+    {
+      "id": "redis-lock-fencing-006",
+      "type": "why",
+      "difficulty": "hard",
+      "title": "Redis locks need fencing",
+      "question": "Why is a lock taken with SET NX PX not enough on its own to guarantee mutual exclusion for correctness-critical work?",
+      "answer": "The lock expires by time. A client paused by GC or a network stall can resume after expiry and write while another client holds the lock. Protect the resource with fencing tokens, a monotonically increasing number that the storage layer checks to reject stale writers. Use Redis locks for efficiency, not for correctness.",
+      "tags": [
+        "locking",
+        "distributed-systems"
+      ],
+      "source": {
+        "name": "Martin Kleppmann - How to do distributed locking",
+        "url": "https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html"
+      }
+    },
+    {
+      "id": "redis-expiry-mechanics-007",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "How keys expire",
+      "body": "Redis expires keys lazily when they are accessed after their TTL, and through an active background cycle that samples keys with TTLs. Expired keys can therefore occupy memory briefly. A plain SET on an existing key discards its TTL unless you pass KEEPTTL.",
+      "tags": [
+        "ttl",
+        "memory"
+      ],
+      "source": {
+        "name": "Redis docs - EXPIRE command",
+        "url": "https://redis.io/docs/latest/commands/expire/"
+      }
+    },
+    {
+      "id": "redis-leaderboard-008",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Real-time leaderboard",
+      "question": "You need a real-time leaderboard with top-10 queries and 'what is my rank' for millions of players. Which Redis structure and commands?",
+      "answer": "A sorted set: ZADD or ZINCRBY to update scores, ZRANGE with REV and LIMIT for the top N, and ZREVRANK for one player's rank. Sorted sets combine a skip list with a hash table, so updates and rank lookups are O(log N).",
+      "tags": [
+        "data-structures",
+        "sorted-sets"
+      ],
+      "source": {
+        "name": "Redis docs - Sorted sets",
+        "url": "https://redis.io/docs/latest/develop/data-types/sorted-sets/"
+      }
+    }
+  ]
+}

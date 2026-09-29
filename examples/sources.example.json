@@ -1,0 +1,9 @@
+{
+  "$comment": "Copy to ~/.config/devsharp/sources.json (Windows: %APPDATA%\\devsharp\\sources.json). Entries are added to the bundled list; an entry with the same id as a bundled source (here: nodejs) replaces it. Ids in disable turn sources off. Reference: docs/CONFIGURATION.md",
+  "sources": [
+    { "id": "deno", "name": "Deno", "topic": "javascript", "type": "github-releases", "repo": "denoland/deno" },
+    { "id": "prisma", "name": "Prisma", "topic": "prisma", "type": "feed", "url": "https://github.com/prisma/prisma/releases.atom" },
+    { "id": "nodejs", "name": "Node.js blog", "topic": "nodejs", "type": "feed", "url": "https://nodejs.org/en/feed/blog.xml" }
+  ],
+  "disable": ["pytorch", "linux"]
+}

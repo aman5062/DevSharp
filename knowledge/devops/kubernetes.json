@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "topic": "kubernetes",
+  "category": "devops",
+  "name": "Kubernetes",
+  "items": [
+    {
+      "id": "kubernetes-reconciliation-loop-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Controllers reconcile state",
+      "body": "Kubernetes is declarative: desired state is stored in the API server, and controllers run control loops that observe actual state and act to close the gap. A Deployment manages ReplicaSets, which create or delete Pods until the count matches.",
+      "question": "What happens if you kubectl delete a Pod owned by a Deployment?",
+      "answer": "Its ReplicaSet sees fewer Pods than desired and creates a replacement. To remove it for good, scale down or delete the owning Deployment.",
+      "tags": [
+        "controllers",
+        "architecture"
+      ],
+      "source": {
+        "name": "Kubernetes docs - Controllers",
+        "url": "https://kubernetes.io/docs/concepts/architecture/controller/"
+      }
+    },
+    {
+      "id": "kubernetes-liveness-vs-readiness-002",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "Liveness probes that cause outages",
+      "question": "Your liveness probe checks the database connection. During a brief database outage every Pod restarts repeatedly, making recovery slower. What went wrong?",
+      "answer": "Failing liveness restarts the container, so it should only detect a process that cannot recover by itself, such as a deadlock. Dependency checks belong in readiness, which removes the Pod from Service endpoints without restarting it. Use a startupProbe for slow boots so liveness does not kill them early.",
+      "tags": [
+        "probes",
+        "reliability"
+      ],
+      "source": {
+        "name": "Kubernetes docs - Configure Liveness, Readiness and Startup Probes",
+        "url": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"
+      }
+    },
+    {
+      "id": "kubernetes-cpu-limit-throttling-003",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "CPU limits and throttling",
+      "question": "Why can a Pod with a CPU limit be slow even when the node has idle CPU?",
+      "answer": "CPU limits are enforced as a quota per scheduling period; once a container uses its quota it is throttled until the next period, regardless of idle capacity. Requests drive scheduling and the proportional share under contention. Memory is different: exceeding a memory limit gets the container OOM-killed.",
+      "tags": [
+        "resources",
+        "performance"
+      ],
+      "source": {
+        "name": "Kubernetes docs - Resource Management for Pods and Containers",
+        "url": "https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/"
+      }
+    },
+    {
+      "id": "kubernetes-secrets-base64-004",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Secrets are only base64",
+      "body": "Secret values are base64-encoded in manifests, which is encoding, not encryption. Protect them with RBAC, enable encryption at rest for the API server data, and never commit them to Git unencrypted.",
+      "tags": [
+        "security",
+        "secrets"
+      ],
+      "source": {
+        "name": "Kubernetes docs - Secrets",
+        "url": "https://kubernetes.io/docs/concepts/configuration/secret/"
+      }
+    },
+    {
+      "id": "kubernetes-graceful-termination-005",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Errors during rolling deploys",
+      "question": "During rolling deploys, clients see a burst of connection errors. The app exits immediately on SIGTERM. What should change?",
+      "answer": "Endpoint removal and SIGTERM happen concurrently, so load balancers may keep routing to the Pod briefly. Keep serving for a few seconds (a preStop sleep or delayed shutdown), stop accepting new connections, finish in-flight requests, and exit within terminationGracePeriodSeconds.",
+      "tags": [
+        "deployments",
+        "shutdown"
+      ],
+      "source": {
+        "name": "Kubernetes docs - Pod Lifecycle (termination)",
+        "url": "https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/"
+      }
+    },
+    {
+      "id": "kubernetes-service-discovery-006",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Services give stable addresses",
+      "body": "A Service provides a stable virtual IP and a DNS name such as my-svc.my-namespace.svc.cluster.local, and routes traffic to ready Pods whose labels match its selector. Pods are ephemeral and change IPs, so clients should never address them directly.",
+      "tags": [
+        "networking",
+        "services"
+      ],
+      "source": {
+        "name": "Kubernetes docs - Service",
+        "url": "https://kubernetes.io/docs/concepts/services-networking/service/"
+      }
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "schema": 1,
+  "topic": "algorithms",
+  "category": "computer-science",
+  "name": "Algorithms",
+  "items": [
+    {
+      "id": "algorithms-amortized-append-001",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Amortized O(1) append",
+      "body": "Dynamic arrays like Python lists grow by allocating a larger buffer and copying when full. An individual append can be O(n), but because capacity grows geometrically, the total cost of n appends is O(n), so append is amortized O(1).",
+      "tags": [
+        "complexity",
+        "amortized"
+      ],
+      "source": {
+        "name": "Python Wiki - TimeComplexity",
+        "url": "https://wiki.python.org/moin/TimeComplexity"
+      }
+    },
+    {
+      "id": "algorithms-big-o-constants-002",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Big-O hides constants and small inputs",
+      "body": "Big-O describes how cost grows as input size grows, ignoring constant factors and lower-order terms. An O(n log n) algorithm can be slower than an O(n^2) one for small n, which is why many sort implementations switch to insertion sort for small ranges.",
+      "question": "Think: when does an O(n) scan beat an O(1) hash lookup in practice?",
+      "answer": "For very small collections, a linear scan over a contiguous array can win because it avoids hashing and benefits from cache locality.",
+      "tags": [
+        "complexity",
+        "performance"
+      ],
+      "source": {
+        "name": "Wikipedia - Big O notation",
+        "url": "https://en.wikipedia.org/wiki/Big_O_notation"
+      }
+    },
+    {
+      "id": "algorithms-binary-search-bounds-003",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Binary search that never terminates",
+      "question": "Your binary search uses lo = mid when the target is greater, with mid = (lo + hi) / 2, and it loops forever on two elements. What is wrong?",
+      "answer": "With lo = mid and floor division, when hi = lo + 1 mid equals lo and the range never shrinks. Pick one invariant, such as a half-open range [lo, hi), and always move past mid (lo = mid + 1 or hi = mid). Library functions like Python bisect already get these bounds right.",
+      "tags": [
+        "binary-search",
+        "bugs"
+      ],
+      "source": {
+        "name": "Python docs - bisect",
+        "url": "https://docs.python.org/3/library/bisect.html"
+      }
+    },
+    {
+      "id": "algorithms-dijkstra-negative-004",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "Dijkstra on a graph with refunds",
+      "question": "You model trades as a graph where some edges have negative cost (refunds) and run Dijkstra. Some shortest paths come out wrong. Why, and what do you use instead?",
+      "answer": "Dijkstra finalizes a node when it is popped from the queue, assuming no later path can be cheaper, which only holds when all edge weights are non-negative. Use Bellman-Ford, which handles negative weights and detects negative cycles, or reweight edges as in Johnson's algorithm.",
+      "tags": [
+        "graphs",
+        "shortest-path"
+      ],
+      "source": {
+        "name": "Wikipedia - Dijkstra's algorithm",
+        "url": "https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm"
+      }
+    },
+    {
+      "id": "algorithms-hash-flooding-005",
+      "type": "why",
+      "difficulty": "hard",
+      "title": "Why hash functions are randomized per process",
+      "question": "Why does Python randomize string hashing with a per-process seed by default?",
+      "answer": "If an attacker can predict hash values, they can submit many keys that collide, degrading hash table operations from O(1) average to O(n) and a batch of inserts to O(n^2), a denial of service known as hash flooding. A secret random seed makes collisions impractical to precompute. Go maps and Rust HashMap use seeded hashing for the same reason.",
+      "tags": [
+        "hashing",
+        "security"
+      ],
+      "source": {
+        "name": "Python docs - PYTHONHASHSEED",
+        "url": "https://docs.python.org/3/using/cmdline.html#envvar-PYTHONHASHSEED"
+      }
+    },
+    {
+      "id": "algorithms-dynamic-programming-006",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Dynamic programming: reuse overlapping subproblems",
+      "body": "Dynamic programming applies when a problem has optimal substructure and overlapping subproblems. Solve each subproblem once and store the result, top-down with memoization or bottom-up with a table. Naive recursive Fibonacci is exponential; with memoization it is O(n).",
+      "question": "Think: what must you define before writing any DP code?",
+      "answer": "The state (what a subproblem is), the recurrence relating it to smaller states, and the base cases.",
+      "tags": [
+        "dp",
+        "recursion"
+      ],
+      "source": {
+        "name": "Python docs - functools.cache",
+        "url": "https://docs.python.org/3/library/functools.html"
+      }
+    }
+  ]
+}

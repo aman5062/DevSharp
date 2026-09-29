@@ -1,0 +1,135 @@
+{
+  "schema": 1,
+  "topic": "python",
+  "category": "languages",
+  "name": "Python",
+  "items": [
+    {
+      "id": "python-mutable-default-arg-001",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Mutable default arguments",
+      "question": "def add(item, items=[]): items.append(item); return items. Calling add(1) then add(2) returns [1, 2]. Why, and what is the fix?",
+      "answer": "Default values are evaluated once, when the def statement executes, and the same list object is reused on every call. Use a sentinel: items=None, then if items is None: items = []. The same applies to dicts, sets, and any other mutable default.",
+      "tags": [
+        "functions",
+        "gotcha"
+      ],
+      "source": {
+        "name": "Python Language Reference - Function definitions",
+        "url": "https://docs.python.org/3/reference/compound_stmts.html#function-definitions"
+      }
+    },
+    {
+      "id": "python-gil-002",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "The global interpreter lock",
+      "body": "CPython's default build has a global interpreter lock: only one thread executes Python bytecode at a time. Threads still help for I/O-bound work because blocking I/O releases the GIL, but CPU-bound pure-Python code does not get faster with more threads.",
+      "question": "What are your options for CPU-bound parallelism?",
+      "answer": "Use multiprocessing or ProcessPoolExecutor, push hot loops into C extensions or NumPy (which release the GIL), or run on the free-threaded CPython build from PEP 703, which removes the GIL at some single-thread cost and requires compatible extensions.",
+      "tags": [
+        "concurrency",
+        "cpython"
+      ],
+      "source": {
+        "name": "Python Glossary - global interpreter lock",
+        "url": "https://docs.python.org/3/glossary.html#term-global-interpreter-lock"
+      }
+    },
+    {
+      "id": "python-asyncio-blocking-003",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Blocking calls freeze asyncio",
+      "question": "Why does a single time.sleep(2) or synchronous HTTP call inside an async def handler stall every other request in an asyncio server?",
+      "answer": "asyncio runs all coroutines on one thread and only switches at await points. A blocking call never yields, so the event loop is frozen until it returns. Use async equivalents (asyncio.sleep, an async HTTP client) or offload blocking work with asyncio.to_thread or loop.run_in_executor.",
+      "tags": [
+        "asyncio",
+        "concurrency"
+      ],
+      "source": {
+        "name": "Python docs - Developing with asyncio",
+        "url": "https://docs.python.org/3/library/asyncio-dev.html"
+      }
+    },
+    {
+      "id": "python-is-vs-eq-004",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "is vs ==",
+      "body": "== compares values via __eq__; is compares object identity. Use is only for singletons such as None. Small-int and string caching can make is appear to work for equal values, but that is an implementation detail.",
+      "tags": [
+        "operators",
+        "gotcha"
+      ],
+      "source": {
+        "name": "Python Language Reference - Identity comparisons",
+        "url": "https://docs.python.org/3/reference/expressions.html#is-not"
+      }
+    },
+    {
+      "id": "python-late-binding-closures-005",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "Late-binding closures",
+      "question": "fns = [lambda: i for i in range(3)]; [f() for f in fns] returns [2, 2, 2]. Why, and how do you get [0, 1, 2]?",
+      "answer": "Closures look up i when they are called, not when they are defined, and all three lambdas share the same i, which ends at 2. Bind the current value as a default argument, lambda i=i: i, or use functools.partial.",
+      "tags": [
+        "closures",
+        "gotcha"
+      ],
+      "source": {
+        "name": "Python Programming FAQ - lambdas in a loop",
+        "url": "https://docs.python.org/3/faq/programming.html#why-do-lambdas-defined-in-a-loop-with-different-values-all-return-the-same-result"
+      }
+    },
+    {
+      "id": "python-refcount-and-gc-006",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Refcounting plus cycle GC",
+      "body": "CPython frees most objects immediately via reference counting. A separate cyclic garbage collector (the gc module) finds reference cycles, such as objects that point to each other, which reference counting alone can never free.",
+      "tags": [
+        "memory",
+        "gc"
+      ],
+      "source": {
+        "name": "Python docs - gc module",
+        "url": "https://docs.python.org/3/library/gc.html"
+      }
+    },
+    {
+      "id": "python-generator-memory-007",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Generators save memory",
+      "question": "Why can sum(x * x for x in range(10**8)) run in constant memory while sum([x * x for x in range(10**8)]) may exhaust RAM?",
+      "answer": "The generator expression yields values lazily, one at a time, as sum pulls them. The list comprehension materializes all 100 million results first. Generators can only be consumed once, so materialize a list when you need several passes or len().",
+      "tags": [
+        "generators",
+        "memory"
+      ],
+      "source": {
+        "name": "Python Language Reference - Generator expressions",
+        "url": "https://docs.python.org/3/reference/expressions.html#generator-expressions"
+      }
+    },
+    {
+      "id": "python-dict-mutation-iteration-008",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Deleting while iterating a dict",
+      "question": "A loop does for k in d: if cond(k): del d[k] and raises RuntimeError: dictionary changed size during iteration. What are clean fixes?",
+      "answer": "Iterate over a snapshot of the keys, for k in list(d): ..., or build a new dict with a comprehension: d = {k: v for k, v in d.items() if not cond(k)}. Changing a dict size during iteration is disallowed because the iterator position would become invalid.",
+      "tags": [
+        "dicts",
+        "gotcha"
+      ],
+      "source": {
+        "name": "Python docs - Mapping types (dict)",
+        "url": "https://docs.python.org/3/library/stdtypes.html#mapping-types-dict"
+      }
+    }
+  ]
+}

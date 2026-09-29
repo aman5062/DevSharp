@@ -1,0 +1,135 @@
+{
+  "schema": 1,
+  "topic": "react",
+  "category": "frontend",
+  "name": "React",
+  "items": [
+    {
+      "id": "react-keys-reconciliation-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Keys in reconciliation",
+      "body": "During reconciliation React matches children by type and key. A stable key lets React move an item's state and DOM node with it; array-index keys tie state to position, so inserting or reordering items can attach state such as input text to the wrong row.",
+      "question": "When is an index key acceptable?",
+      "answer": "When the list is static: never reordered, filtered, or inserted into, and its items hold no local state. Otherwise use a stable id from the data.",
+      "tags": [
+        "reconciliation",
+        "lists"
+      ],
+      "source": {
+        "name": "React docs - Rendering Lists",
+        "url": "https://react.dev/learn/rendering-lists"
+      }
+    },
+    {
+      "id": "react-reset-with-key-002",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Resetting state with a key",
+      "question": "A ProfileForm component keeps showing the previous user's draft text after you switch users, because its state was initialized from props once. What is the idiomatic fix?",
+      "answer": "Render it as <ProfileForm key={user.id} user={user} />. A different key makes React treat it as a new component instance and discard the old state, which is simpler and less error-prone than syncing state from props in an effect.",
+      "tags": [
+        "state",
+        "keys"
+      ],
+      "source": {
+        "name": "React docs - Preserving and Resetting State",
+        "url": "https://react.dev/learn/preserving-and-resetting-state"
+      }
+    },
+    {
+      "id": "react-stale-closure-interval-003",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "Stale closure in an interval",
+      "question": "Inside useEffect with an empty dependency array, setInterval(() => setCount(count + 1), 1000) makes count go from 0 to 1 and then stay at 1. Why?",
+      "answer": "The effect ran once and its callback closed over count from the first render, which is 0, so it always sets 1. Use the updater form setCount(c => c + 1), which receives the latest state, or list count as a dependency so the interval is recreated.",
+      "tags": [
+        "hooks",
+        "closures"
+      ],
+      "source": {
+        "name": "React docs - useState (updating based on previous state)",
+        "url": "https://react.dev/reference/react/useState"
+      }
+    },
+    {
+      "id": "react-state-snapshot-004",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "State is a snapshot",
+      "question": "Why does console.log(count) right after setCount(count + 1) print the old value?",
+      "answer": "Each render sees a fixed snapshot of state. setCount schedules a re-render with the new value; it does not change the variable already captured by the current render. The new value appears on the next render.",
+      "tags": [
+        "state",
+        "rendering"
+      ],
+      "source": {
+        "name": "React docs - State as a Snapshot",
+        "url": "https://react.dev/learn/state-as-a-snapshot"
+      }
+    },
+    {
+      "id": "react-strict-mode-double-effects-005",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Effects run twice in dev",
+      "question": "Why do effects run twice on mount in development under StrictMode?",
+      "answer": "React mounts, unmounts, and remounts components in development to surface effects that lack proper cleanup, such as subscriptions or connections that would leak. If setup, cleanup, setup changes behavior, the effect needs a cleanup function. Production runs it once.",
+      "tags": [
+        "effects",
+        "strict-mode"
+      ],
+      "source": {
+        "name": "React docs - StrictMode",
+        "url": "https://react.dev/reference/react/StrictMode"
+      }
+    },
+    {
+      "id": "react-derive-dont-sync-006",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Derive state during render",
+      "body": "If a value can be computed from props or state, compute it during render instead of storing it in state and syncing it with useEffect. The effect approach renders once with stale data, then again, and can drift out of sync.",
+      "tags": [
+        "effects",
+        "state"
+      ],
+      "source": {
+        "name": "React docs - You Might Not Need an Effect",
+        "url": "https://react.dev/learn/you-might-not-need-an-effect"
+      }
+    },
+    {
+      "id": "react-memo-new-references-007",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "memo defeated by new props",
+      "question": "A child wrapped in memo still re-renders on every parent render. Its props are items={list.filter(isOpen)} and onSelect={() => select(id)}. Why?",
+      "answer": "memo compares props with Object.is, and both the filter call and the inline arrow create new references every render, so props always look changed. Memoize them with useMemo and useCallback, or let the React Compiler do it; first confirm the re-render is actually expensive.",
+      "tags": [
+        "performance",
+        "memoization"
+      ],
+      "source": {
+        "name": "React docs - memo",
+        "url": "https://react.dev/reference/react/memo"
+      }
+    },
+    {
+      "id": "react-automatic-batching-008",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Automatic batching",
+      "body": "React batches state updates made in the same event handler, timeout, or promise callback into a single re-render, so several setState calls in one handler produce one render rather than several.",
+      "tags": [
+        "state",
+        "rendering"
+      ],
+      "source": {
+        "name": "React docs - Queueing a Series of State Updates",
+        "url": "https://react.dev/learn/queueing-a-series-of-state-updates"
+      }
+    }
+  ]
+}

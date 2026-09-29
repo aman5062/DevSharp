@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "topic": "cryptography",
+  "category": "security",
+  "name": "Cryptography",
+  "items": [
+    {
+      "id": "cryptography-hash-vs-encrypt-001",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Hashing vs encryption vs encoding",
+      "body": "Hashing is one-way and keyless; encryption is reversible with a key; encoding such as Base64 is reversible by anyone and provides no secrecy. Store passwords with a password hash, never with reversible encryption.",
+      "tags": [
+        "fundamentals"
+      ],
+      "source": {
+        "name": "OWASP - Cryptographic Storage Cheat Sheet",
+        "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html"
+      }
+    },
+    {
+      "id": "cryptography-password-hashing-002",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Password hashing with Argon2id or bcrypt",
+      "body": "Password hashes must be salted and deliberately slow so offline guessing is expensive. OWASP recommends Argon2id (for example 19 MiB memory, 2 iterations, parallelism 1), then scrypt, with bcrypt for legacy systems. Fast hashes like SHA-256 allow billions of GPU guesses per second.",
+      "question": "What bcrypt limitation should you know before hashing long passphrases?",
+      "answer": "bcrypt only uses the first 72 bytes of input, so longer passwords are silently truncated. Prefer Argon2id, and avoid naive pre-hashing that can introduce null bytes.",
+      "tags": [
+        "passwords",
+        "hashing"
+      ],
+      "source": {
+        "name": "OWASP - Password Storage Cheat Sheet",
+        "url": "https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html"
+      }
+    },
+    {
+      "id": "cryptography-gcm-nonce-reuse-003",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "Reusing an AES-GCM nonce",
+      "question": "A service encrypts records with AES-GCM using one key and a counter nonce that resets to zero on every restart. How bad is that?",
+      "answer": "Catastrophic. Reusing a nonce with the same key reveals the XOR of the two plaintexts and lets an attacker recover the authentication key and forge valid ciphertexts. Use random 96-bit nonces with key rotation well before about 2^32 messages, a persistent counter, or a nonce-misuse-resistant mode like AES-GCM-SIV.",
+      "tags": [
+        "aead",
+        "nonces"
+      ],
+      "source": {
+        "name": "RFC 5116 - AEAD Interface",
+        "url": "https://www.rfc-editor.org/rfc/rfc5116"
+      }
+    },
+    {
+      "id": "cryptography-constant-time-compare-004",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Comparing webhook signatures",
+      "question": "Your webhook handler computes an HMAC and checks it with signature == expected. A reviewer flags it. Why, and what is the fix?",
+      "answer": "Ordinary string comparison returns at the first differing byte, so response timing can leak how much of a guess is correct. Compare with a constant-time function such as crypto.timingSafeEqual in Node or hmac.compare_digest in Python, after checking the lengths match.",
+      "tags": [
+        "timing-attacks",
+        "hmac"
+      ],
+      "source": {
+        "name": "Node.js docs - crypto",
+        "url": "https://nodejs.org/api/crypto.html"
+      }
+    },
+    {
+      "id": "cryptography-hmac-length-extension-005",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Why HMAC instead of hash(secret + msg)",
+      "question": "Why is sha256(secret + message) a bad way to authenticate a message?",
+      "answer": "SHA-256 is a Merkle-Damgard hash, so from a valid digest an attacker can compute the hash of message plus padding plus extra data without knowing the secret: a length extension attack. HMAC nests two keyed hashes and is not vulnerable, so use HMAC-SHA256.",
+      "tags": [
+        "hmac",
+        "hashing"
+      ],
+      "source": {
+        "name": "RFC 2104 - HMAC",
+        "url": "https://www.rfc-editor.org/rfc/rfc2104"
+      }
+    },
+    {
+      "id": "cryptography-csprng-006",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "Use a CSPRNG for secrets",
+      "body": "Tokens, keys, nonces and reset codes must come from a cryptographically secure generator such as crypto.getRandomValues, crypto.randomBytes or Python secrets. Math.random and similar PRNGs are predictable from their outputs.",
+      "tags": [
+        "randomness"
+      ],
+      "source": {
+        "name": "MDN - Crypto.getRandomValues()",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/API/Crypto/getRandomValues"
+      }
+    }
+  ]
+}

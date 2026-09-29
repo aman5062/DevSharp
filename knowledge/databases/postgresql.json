@@ -1,0 +1,138 @@
+{
+  "schema": 1,
+  "topic": "postgresql",
+  "category": "databases",
+  "name": "PostgreSQL",
+  "items": [
+    {
+      "id": "postgresql-mvcc-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "MVCC",
+      "body": "PostgreSQL uses multi-version concurrency control: an UPDATE writes a new row version and marks the old one dead instead of overwriting in place. Each transaction sees a snapshot of the versions visible to it, so readers do not block writers and writers do not block readers.",
+      "question": "What is the cost of this design?",
+      "answer": "Dead row versions accumulate and bloat tables and indexes until VACUUM reclaims them, and a long-running transaction prevents cleanup of any version that its snapshot might still need.",
+      "tags": [
+        "mvcc",
+        "concurrency",
+        "vacuum"
+      ],
+      "source": {
+        "name": "PostgreSQL docs - Concurrency Control Introduction",
+        "url": "https://www.postgresql.org/docs/current/mvcc-intro.html"
+      }
+    },
+    {
+      "id": "postgresql-idle-in-transaction-bloat-002",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "Bloat despite autovacuum",
+      "question": "Table bloat keeps growing even though autovacuum runs constantly. pg_stat_activity shows a session 'idle in transaction' for 6 hours. How are these related?",
+      "answer": "VACUUM can only remove row versions no longer visible to any snapshot. The old open transaction holds back the xmin horizon, so every dead tuple created since it began must be kept. Terminate it and set idle_in_transaction_session_timeout; also check stale replication slots and prepared transactions, which hold the horizon too.",
+      "tags": [
+        "vacuum",
+        "bloat",
+        "operations"
+      ],
+      "source": {
+        "name": "PostgreSQL docs - Routine Vacuuming",
+        "url": "https://www.postgresql.org/docs/current/routine-vacuuming.html"
+      }
+    },
+    {
+      "id": "postgresql-xid-wraparound-003",
+      "type": "fact",
+      "difficulty": "medium",
+      "title": "Transaction ID wraparound",
+      "body": "Transaction IDs are 32 bits, so VACUUM must periodically freeze old rows to prevent XID wraparound. If freezing falls far enough behind, PostgreSQL stops assigning new transaction IDs until a vacuum completes, which is effectively an outage for writes.",
+      "tags": [
+        "vacuum",
+        "operations"
+      ],
+      "source": {
+        "name": "PostgreSQL docs - Preventing Transaction ID Wraparound Failures",
+        "url": "https://www.postgresql.org/docs/current/routine-vacuuming.html#VACUUM-FOR-WRAPAROUND"
+      }
+    },
+    {
+      "id": "postgresql-create-index-concurrently-004",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Indexing a busy table",
+      "question": "You need an index on a 200 GB table that takes writes all day. What does a plain CREATE INDEX do, and what should you use instead?",
+      "answer": "Plain CREATE INDEX takes a lock that blocks INSERT, UPDATE, and DELETE for the entire build. CREATE INDEX CONCURRENTLY allows writes at the cost of two table scans and a longer build. It cannot run inside a transaction block, and if it fails it leaves an INVALID index you must drop and retry.",
+      "tags": [
+        "indexes",
+        "locking",
+        "migrations"
+      ],
+      "source": {
+        "name": "PostgreSQL docs - CREATE INDEX",
+        "url": "https://www.postgresql.org/docs/current/sql-createindex.html"
+      }
+    },
+    {
+      "id": "postgresql-connection-pooling-005",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "Why use a connection pooler",
+      "question": "Why do PostgreSQL deployments usually put a pooler such as PgBouncer in front instead of allowing thousands of direct connections?",
+      "answer": "Each connection is a separate backend process with its own memory, and throughput degrades with many active backends contending for CPU and locks. A pooler multiplexes many client connections onto a few server connections. Transaction pooling mode breaks session state such as SET and session-level advisory locks.",
+      "tags": [
+        "connections",
+        "scaling"
+      ],
+      "source": {
+        "name": "PgBouncer - Features",
+        "url": "https://www.pgbouncer.org/features.html"
+      }
+    },
+    {
+      "id": "postgresql-explain-analyze-006",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "EXPLAIN ANALYZE",
+      "body": "EXPLAIN shows the planner's estimated plan; EXPLAIN (ANALYZE, BUFFERS) actually executes the query and reports real row counts, timings, and buffer usage. Large gaps between estimated and actual rows usually point to stale or insufficient statistics.",
+      "tags": [
+        "performance",
+        "query-planning"
+      ],
+      "source": {
+        "name": "PostgreSQL docs - Using EXPLAIN",
+        "url": "https://www.postgresql.org/docs/current/using-explain.html"
+      }
+    },
+    {
+      "id": "postgresql-expression-index-007",
+      "type": "why",
+      "difficulty": "hard",
+      "title": "Index ignored for lower(email)",
+      "question": "Why might PostgreSQL ignore an index on email for WHERE lower(email) = 'a@b.com'?",
+      "answer": "The index stores raw email values, and the planner cannot use it for an expression it does not match. Create an expression index on (lower(email)), or use a case-insensitive collation or type. The planner may also legitimately prefer a sequential scan when a predicate matches a large fraction of the table.",
+      "tags": [
+        "indexes",
+        "performance"
+      ],
+      "source": {
+        "name": "PostgreSQL docs - Indexes on Expressions",
+        "url": "https://www.postgresql.org/docs/current/indexes-expressional.html"
+      }
+    },
+    {
+      "id": "postgresql-skip-locked-queue-008",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "PostgreSQL as a job queue",
+      "question": "Several workers poll a jobs table and sometimes process the same job twice. How can PostgreSQL itself make this safe?",
+      "answer": "In a transaction, SELECT ... FROM jobs WHERE status = 'pending' ORDER BY id LIMIT 10 FOR UPDATE SKIP LOCKED. Each worker locks distinct rows and skips rows claimed by others instead of waiting, then marks them before commit. Keep these transactions short to avoid holding locks and blocking vacuum.",
+      "tags": [
+        "locking",
+        "queues"
+      ],
+      "source": {
+        "name": "PostgreSQL docs - SELECT (the locking clause)",
+        "url": "https://www.postgresql.org/docs/current/sql-select.html#SQL-FOR-UPDATE-SHARE"
+      }
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "topic": "web-security",
+  "category": "security",
+  "name": "Web Security",
+  "items": [
+    {
+      "id": "web-security-csp-nonces-001",
+      "type": "concept",
+      "difficulty": "medium",
+      "title": "Content Security Policy with nonces",
+      "body": "CSP is a response header telling the browser which script sources may execute. A strict policy uses a fresh random nonce per response (script-src nonce-... plus strict-dynamic), so injected script tags without the nonce are blocked. It limits the damage of XSS but does not replace output encoding.",
+      "question": "Why does adding unsafe-inline to script-src undermine the policy?",
+      "answer": "It allows any inline script to run, which is exactly what most injected XSS payloads are. Browsers ignore unsafe-inline when a nonce or hash is present, which is why nonce-based policies stay backward compatible.",
+      "tags": [
+        "xss",
+        "headers"
+      ],
+      "source": {
+        "name": "OWASP - Content Security Policy Cheat Sheet",
+        "url": "https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html"
+      }
+    },
+    {
+      "id": "web-security-sql-injection-params-002",
+      "type": "think",
+      "difficulty": "medium",
+      "title": "Fixing an injectable search endpoint",
+      "question": "A search endpoint builds SQL with string concatenation, including a user-chosen sort column in ORDER BY. How do you fix it?",
+      "answer": "Use parameterized queries for all values so the driver sends data separately from SQL text. Identifiers such as column names and sort direction cannot be bound as parameters, so map user input to an allowlist of known columns instead. Escaping by hand is fragile and not a fix.",
+      "tags": [
+        "sql-injection",
+        "databases"
+      ],
+      "source": {
+        "name": "OWASP - SQL Injection Prevention Cheat Sheet",
+        "url": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html"
+      }
+    },
+    {
+      "id": "web-security-ssrf-url-preview-003",
+      "type": "think",
+      "difficulty": "hard",
+      "title": "SSRF in a link-preview feature",
+      "question": "Your app fetches any URL a user pastes to build a link preview. A tester submits http://169.254.169.254/latest/meta-data/. What defenses do you need?",
+      "answer": "Resolve the hostname, reject private, loopback, link-local and metadata addresses, and connect to the validated IP so DNS rebinding cannot swap it. Disable or re-validate redirects, restrict schemes to http and https, and run the fetcher in an isolated network. On AWS also enforce IMDSv2.",
+      "tags": [
+        "ssrf",
+        "network"
+      ],
+      "source": {
+        "name": "OWASP - SSRF Prevention Cheat Sheet",
+        "url": "https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html"
+      }
+    },
+    {
+      "id": "web-security-samesite-cookies-004",
+      "type": "fact",
+      "difficulty": "easy",
+      "title": "SameSite cookie attribute",
+      "body": "SameSite=Strict never sends the cookie on cross-site requests, Lax sends it only on top-level GET navigations, and None sends it everywhere but requires Secure. Chromium browsers treat cookies without the attribute as Lax.",
+      "tags": [
+        "cookies",
+        "csrf"
+      ],
+      "source": {
+        "name": "MDN - Set-Cookie",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie"
+      }
+    },
+    {
+      "id": "web-security-httponly-not-xss-fix-005",
+      "type": "why",
+      "difficulty": "medium",
+      "title": "HttpOnly does not stop XSS",
+      "question": "Why does an XSS bug remain serious even when the session cookie is HttpOnly?",
+      "answer": "HttpOnly only stops script from reading the cookie via document.cookie. Injected script runs in your origin, so it can still send authenticated requests (the browser attaches the cookie), read page data and CSRF tokens, and change the DOM. It limits token theft, not account takeover.",
+      "tags": [
+        "xss",
+        "cookies"
+      ],
+      "source": {
+        "name": "OWASP - Cross Site Scripting Prevention Cheat Sheet",
+        "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html"
+      }
+    },
+    {
+      "id": "web-security-csrf-defense-layers-006",
+      "type": "concept",
+      "difficulty": "hard",
+      "title": "CSRF defenses beyond SameSite",
+      "body": "CSRF tricks a browser into sending a state-changing request with the victim cookies. SameSite helps, but same-site is not same-origin: a compromised sibling subdomain counts as same-site. Robust defenses combine synchronizer or double-submit tokens, Fetch Metadata (Sec-Fetch-Site) checks, and never changing state on GET.",
+      "tags": [
+        "csrf",
+        "cookies"
+      ],
+      "source": {
+        "name": "OWASP - CSRF Prevention Cheat Sheet",
+        "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html"
+      }
+    }
+  ]
+}
