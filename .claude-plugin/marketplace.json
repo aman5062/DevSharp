@@ -1,13 +1,18 @@
 {
   "name": "devsharp",
-  "owner": { "name": "Aman", "url": "https://github.com/aman5062" },
-  "metadata": { "description": "DevSharp — keep learning while AI helps you code." },
+  "owner": {
+    "name": "Aman",
+    "url": "https://github.com/aman5062"
+  },
+  "metadata": {
+    "description": "DevSharp \u2014 keep learning while AI helps you code."
+  },
   "plugins": [
     {
       "name": "devsharp",
       "source": "./",
       "description": "Zero-token learning cards between Claude turns: facts, Think First questions, concepts and tech updates.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "category": "learning"
     }
   ]

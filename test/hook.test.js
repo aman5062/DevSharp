@@ -96,6 +96,14 @@ test('disabled: no cards, commands still work', () => {
   t.cleanup();
 });
 
+test('first-ever card appears after the first turn even without SessionStart (installed mid-session)', () => {
+  const t = setup({ mode: 'fact' });
+  const out = run('stop', { session_id: 'mid-install', cwd: PROJECT }, t.env);
+  assert.match(JSON.parse(out).systemMessage, /╭─/);
+  assert.equal(run('stop', { session_id: 'mid-install', cwd: PROJECT }, t.env), '', 'then the normal cadence applies');
+  t.cleanup();
+});
+
 test('stop_hook_active is respected (never participates in stop-hook loops)', () => {
   const t = setup();
   assert.equal(run('stop', { session_id: 's', cwd: PROJECT, stop_hook_active: true }, t.env), '');

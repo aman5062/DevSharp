@@ -6,6 +6,13 @@ All notable changes to DevSharp are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-09-29
+
+### Fixed
+
+- The first card ever now appears after your first turn, even when the plugin was
+  installed in the middle of a session (previously it waited for 3 turns).
+
 ## [0.1.0] — 2026-09-29
 
 First public release.

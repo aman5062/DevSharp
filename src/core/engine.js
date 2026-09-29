@@ -127,7 +127,10 @@ function onTurnEnd(opts) {
     }
   } else {
     const { turns, interval } = cadence(config);
-    if (sess.sinceCard >= turns && ctx.now - state.lastShownAt >= interval) {
+    // A brand-new user sees a card after their very first turn, even if they installed
+    // mid-session (SessionStart never ran, so the turn counter started from zero).
+    const firstEver = !state.lastShownAt && Number.isFinite(turns);
+    if (firstEver || (sess.sinceCard >= turns && ctx.now - state.lastShownAt >= interval)) {
       out = pickAndShow(ctx, state, sess);
     }
   }
