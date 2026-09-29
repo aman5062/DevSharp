@@ -16,7 +16,7 @@ const SESSION_TTL = 24 * 3600e3;
 const EVENT_TYPES = ['shown', 'revealed', 'dismissed', 'known', 'skipped'];
 
 function emptyState() {
-  return { version: 1, lastShownAt: 0, snoozeUntil: 0, items: {}, events: [], sessions: {}, days: [] };
+  return { version: 1, lastShownAt: 0, snoozeUntil: 0, aiNoticeShown: false, items: {}, events: [], sessions: {}, days: [] };
 }
 
 function loadState(p) {

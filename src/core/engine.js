@@ -75,7 +75,13 @@ function pickAndShow(ctx, state, sess, { mode = null } = {}) {
   if (inline) store.record(state, 'revealed', pick.item, ctx.now, { auto: true });
   sess.sinceCard = 0;
   sess.pending = { id: pick.item.id, turn: sess.turns, t: ctx.now, hasAnswer: hasAnswer(pick.item), revealed: inline };
-  return renderCard(pick.item, renderOpts(ctx.config, { revealHint: hasAnswer(pick.item) }));
+  let text = renderCard(pick.item, renderOpts(ctx.config, { revealHint: hasAnswer(pick.item) }));
+  if (ctx.config.ai && !state.aiNoticeShown) {
+    // AI cards are on by default: say so once, plainly, with the off switch.
+    state.aiNoticeShown = true;
+    text += '\n\n✨ AI cards are on: now and then DevSharp asks Haiku (via your claude login, ~$0.005, max 25/day) to explain concepts in your latest git changes. Secrets are never sent. Turn off: /devsharp:ai off';
+  }
+  return text;
 }
 
 // ---- lifecycle -----------------------------------------------------------
@@ -125,7 +131,7 @@ function setMidrun(ctx, dueAt) {
 }
 
 function midInterval(config) {
-  return parseDuration(config.mid_run_interval) ?? 3 * 60e3;
+  return parseDuration(config.mid_run_interval) ?? 60e3;
 }
 
 function revealPending(ctx, state, sess, extra = {}) {

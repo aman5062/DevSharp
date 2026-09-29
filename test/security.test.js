@@ -48,7 +48,7 @@ test('sanitize: only https, credential-free, public-host URLs survive', () => {
 });
 
 test('hostile custom pack renders inert through the real hook', () => {
-  const t = home({ updates: false, mode: 'fact', topics: ['evil'] });
+  const t = home({ updates: false, ai: false, mode: 'fact', topics: ['evil'] });
   fs.mkdirSync(path.join(t.home, 'packs'));
   fs.writeFileSync(path.join(t.home, 'packs', 'evil.json'), JSON.stringify({
     schema: 1, topic: 'evil', category: 'custom', name: `Evil${HOSTILE[0]}`,
@@ -86,7 +86,7 @@ test('hand-edited update cache with injection content stays inert and is never s
 });
 
 test('custom pack path traversal: only plain *.json names directly inside packs/ are read', () => {
-  const t = home({ updates: false });
+  const t = home({ updates: false, ai: false });
   const packs = path.join(t.home, 'packs');
   fs.mkdirSync(path.join(packs, 'sub'), { recursive: true });
   const pack = (id) => JSON.stringify({ topic: 'x', category: 'custom', items: [{ id, type: 'fact', title: id, body: id }] });
@@ -100,7 +100,7 @@ test('custom pack path traversal: only plain *.json names directly inside packs/
 });
 
 test('config cannot point DevSharp at arbitrary files or enable telemetry', () => {
-  const t = home({ updates: false, packs: '/etc', sources: '/etc/passwd', telemetry: true, card_width: '../../' });
+  const t = home({ updates: false, ai: false, packs: '/etc', sources: '/etc/passwd', telemetry: true, card_width: '../../' });
   const { loadConfig } = require('../src/core/config');
   const { config, warnings } = loadConfig(require('../src/core/paths').paths(t.env));
   assert.equal(config.telemetry, false);
@@ -111,7 +111,7 @@ test('config cannot point DevSharp at arbitrary files or enable telemetry', () =
 });
 
 test('command arguments are data, not code', () => {
-  const t = home({ updates: false });
+  const t = home({ updates: false, ai: false });
   for (const p of ['/devsharp:config set card_style $(rm -rf ~)', '/devsharp:snooze `id`', '/devsharp:next ;ls', '/devsharp:config set __proto__ {"polluted":1}']) {
     const j = JSON.parse(handle('prompt', { session_id: 'c', cwd: t.home, prompt: p }, t.env));
     assert.equal(j.decision, 'block');

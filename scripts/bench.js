@@ -12,7 +12,7 @@ const ROOT = path.join(__dirname, '..');
 const HOOK = path.join(ROOT, 'src', 'claude', 'hook.js');
 const RUNS = Number(process.argv[2]) || 20;
 const home = fs.mkdtempSync(path.join(os.tmpdir(), 'devsharp-bench-'));
-fs.writeFileSync(path.join(home, 'config.json'), JSON.stringify({ updates: false, frequency: 'high', minimum_interval: '0s' }));
+fs.writeFileSync(path.join(home, 'config.json'), JSON.stringify({ updates: false, ai: false, frequency: 'high', minimum_interval: '0s' }));
 const env = { ...process.env, DEVSHARP_HOME: home };
 const timeBin = fs.existsSync('/usr/bin/time') ? '/usr/bin/time' : null;
 

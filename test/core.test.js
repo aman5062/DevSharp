@@ -209,7 +209,7 @@ test('select: mixed mode balances types over time (think gets the largest share)
   const s = store.emptyState();
   const counts = {};
   for (let i = 0; i < 40; i += 1) {
-    const r = selectCard({ items, state: s, config: { ...baseConfig(), updates: false }, now: NOW + i, seed: 'm' });
+    const r = selectCard({ items, state: s, config: { ...baseConfig(), updates: false, ai: false }, now: NOW + i, seed: 'm' });
     counts[r.mode] = (counts[r.mode] || 0) + 1;
     store.record(s, 'shown', r.item, NOW + i);
   }
@@ -219,7 +219,7 @@ test('select: mixed mode balances types over time (think gets the largest share)
 
 test('select: think_first=false never picks think', () => {
   const s = store.emptyState();
-  const cfg = { ...baseConfig(), think_first: false, updates: false };
+  const cfg = { ...baseConfig(), think_first: false, updates: false, ai: false };
   for (let i = 0; i < 10; i += 1) {
     const r = selectCard({ items: pool(), state: s, config: cfg, now: NOW + i, seed: 'q' });
     if (!r) break;
@@ -246,7 +246,7 @@ test('select: chooseMode never repeats a mode three times when others exist', ()
   const s = store.emptyState();
   store.record(s, 'shown', item('a-think-1', { type: 'think' }), NOW);
   store.record(s, 'shown', item('a-think-2', { type: 'think' }), NOW);
-  const m = chooseMode(s, { ...baseConfig(), updates: false }, { think: true, fact: true, concept: true, why: true, update: false });
+  const m = chooseMode(s, { ...baseConfig(), updates: false, ai: false }, { think: true, fact: true, concept: true, why: true, update: false });
   assert.notEqual(m, 'think');
 });
 

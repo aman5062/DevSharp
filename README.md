@@ -8,8 +8,8 @@ for Claude**: the moment you send a prompt, and again every few minutes during l
 runs. Each card is a complete lesson you just read, with nothing to click. It can be a quick fact, a question to think about, a concept, a "why does it work
 like this?", or a headline from a project you depend on.
 
-Its core never calls a language model and adds **zero tokens** to your Claude usage.
-Optionally, you can turn on [AI cards](#ai-cards-from-your-own-code-opt-in) that teach the concepts in *your own* latest edits, using a small, budgeted Haiku call that never touches your conversation.
+Showing cards never calls a language model and adds **zero tokens** to your conversation.
+[AI cards](#ai-cards-from-your-own-code) are **on by default**: now and then a small, budgeted Haiku call (about $0.005, at most 25 a day) explains the concepts in *your own* latest edits, separately from your conversation. Turn them off with `/devsharp:ai off`.
 
 > **Think → Learn → Code.** While the AI writes the code, you keep the
 > understanding.
@@ -37,12 +37,30 @@ Restart Claude Code and type `/devsharp:next`. New here? Read the
 
 ---
 
+## Works with other AI CLIs too
+
+| CLI | How | Cards |
+|-----|-----|-------|
+| **Claude Code** | the plugin (above) | on prompt, every minute during long runs; commands via `/devsharp:*` |
+| **OpenAI Codex CLI** | `devsharp setup codex` (adds hooks to `~/.codex/hooks.json`) | on prompt and when the agent finishes |
+| **Gemini CLI** | `devsharp setup gemini` (adds hooks to `~/.gemini/settings.json`) | on prompt, during tool runs, when it finishes |
+| **opencode** | `devsharp setup opencode` (adds a plugin) | as pop-up toasts |
+| **Anything else**: Freebuff/Codebuff, Aider, Copilot CLI, Cursor... | `devsharp watch` in a split pane | a new card every minute |
+
+Install the CLI first: `npm install -g github:aman5062/DevSharp`. Each `setup` backs up
+the file it edits, and `--remove` undoes it. Example for any CLI with tmux:
+`tmux split-window -h -l 64 devsharp watch`.
+
+Status: Claude Code is verified end to end. Codex and Gemini use their documented hook
+formats (`systemMessage` is shown to the user) but have not been run here yet; the opencode
+plugin follows its documented plugin API and is also untested. Reports welcome.
+
 ## When cards appear
 
 | Moment | What you see |
 |--------|--------------|
 | You send a prompt (the wait begins) | A card, if one is due (every 3 prompts / 10 min on `medium`) |
-| Claude is still working after 3 minutes | A new card every 3 minutes (`mid_run_interval`), so a 2-hour agent run keeps teaching you |
+| Claude is still working after 1 minute | A new card every minute (`mid_run_interval`), so a 2-hour agent run keeps teaching you |
 | Claude finishes | Nothing extra. The card you read while waiting was already complete |
 
 Every card shows the **whole lesson at once**: for question cards, the answer is
@@ -155,14 +173,15 @@ command menu. Their bodies are only a fallback: if the hook is not running, the
 command text reaches Claude, which replies with a one-line "DevSharp hook is
 not active" message (see [Troubleshooting](docs/TROUBLESHOOTING.md)).
 
-## AI cards from your own code (opt-in)
+## AI cards from your own code
 
 Static packs cannot know what *you* just wrote. Turn on AI cards and DevSharp also
 teaches the concepts behind your latest edits, and summarises real release notes
 for the technologies your project uses:
 
 ```text
-/devsharp:ai on      # enable (off by default)
+/devsharp:ai off     # disable (on by default)
+/devsharp:ai on      # re-enable
 /devsharp:ai         # status: calls used today, last cost, cards waiting
 /devsharp:ai now     # generate right away
 ```
@@ -304,7 +323,7 @@ breaks a session.
 | `card_style` | `rail` | `rail`, `box`, `plain` |
 | `card_width` | `64` | 40 to 100 columns |
 | `telemetry` | `false` | Always false; it cannot be turned on |
-| `ai` | `false` | Opt-in AI cards (see above) |
+| `ai` | `true` | AI cards from your code (see above) |
 | `ai_model` | `haiku` | Model alias passed to `claude --model` |
 | `ai_daily_limit` | `25` | 1 to 100 calls per day |
 | `ai_min_interval` | `10m` | Minimum time between AI calls (>= 1m) |

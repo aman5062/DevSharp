@@ -45,7 +45,9 @@ function parse(raw) {
 }
 
 // Pure function: hook event + input -> stdout string ('' for none). Exported for tests.
-function handle(event, input, env = process.env, now = Date.now()) {
+// host: which AI CLI is calling. Only Claude Code supports the zero-token
+// `decision: block` command interception; other hosts only get user-facing cards.
+function handle(event, input, env = process.env, now = Date.now(), host = 'claude') {
   // Set by DevSharp's own background model call, so its child process never re-enters DevSharp.
   if (env.DEVSHARP_DISABLE === '1') return '';
   const cwd = typeof input.cwd === 'string' && input.cwd ? input.cwd : env.CLAUDE_PROJECT_DIR || process.cwd();
@@ -56,6 +58,7 @@ function handle(event, input, env = process.env, now = Date.now()) {
       return '';
     case 'prompt': {
       const m = COMMAND_RE.exec(typeof input.prompt === 'string' ? input.prompt : '');
+      if (m && host !== 'claude') return ''; // elsewhere, use the `devsharp` terminal command
       if (!m) {
         if (typeof input.prompt !== 'string' || !input.prompt.trim()) return '';
         // The developer just started waiting for Claude: the moment for a card.
@@ -91,9 +94,11 @@ function handle(event, input, env = process.env, now = Date.now()) {
 
 async function main() {
   const event = process.argv[2];
+  const hostArg = process.argv.find((a) => a.startsWith('--host='));
+  const host = hostArg && /^--host=[a-z]{2,12}$/.test(hostArg) ? hostArg.slice(7) : 'claude';
   try {
     const input = parse(await readStdin());
-    const out = handle(event, input);
+    const out = handle(event, input, process.env, Date.now(), host);
     if (out) process.stdout.write(out);
   } catch (err) {
     process.stderr.write(`devsharp: ${event}: ${err && err.stack ? err.stack : err}\n`);

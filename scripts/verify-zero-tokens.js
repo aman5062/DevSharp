@@ -19,7 +19,7 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const full = process.argv.includes('--full');
 const home = fs.mkdtempSync(path.join(os.tmpdir(), 'devsharp-verify-'));
-fs.writeFileSync(path.join(home, 'config.json'), JSON.stringify({ updates: false, frequency: 'high', minimum_interval: '0s', mode: 'fact' }));
+fs.writeFileSync(path.join(home, 'config.json'), JSON.stringify({ updates: false, ai: false, frequency: 'high', minimum_interval: '0s', mode: 'fact' }));
 const env = { ...process.env, DEVSHARP_HOME: home };
 let failed = 0;
 

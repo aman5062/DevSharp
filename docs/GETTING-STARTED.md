@@ -162,16 +162,16 @@ Change settings with `/devsharp:config set <setting> <value>`:
 
 ---
 
-## 7. Optional: cards about YOUR code (AI cards)
+## 7. Cards about YOUR code (AI cards)
 
-Turned off by default. If you switch it on, DevSharp occasionally asks a small, cheap
+On by default. DevSharp occasionally asks a small, cheap
 model (Haiku, through your own Claude login) to explain the concepts in the code you
 just changed, and to summarise real release notes for your tools:
 
 ```text
-/devsharp:ai on       # turn on
 /devsharp:ai          # see today's usage and cost
 /devsharp:ai off      # turn off
+/devsharp:ai on       # turn back on
 ```
 
 - Each call costs about half a US cent at Haiku list price, with a maximum of 25 a day.
@@ -180,6 +180,14 @@ just changed, and to summarise real release notes for your tools:
   never included, and anything that looks like a password or token is blanked out.
 
 ---
+
+## 7b. Using another AI CLI?
+
+```bash
+npm install -g github:aman5062/DevSharp
+devsharp setup codex      # or: gemini, opencode
+devsharp watch            # any other CLI (Freebuff, Aider, Copilot...): run in a split pane
+```
 
 ## 8. Updating and removing
 

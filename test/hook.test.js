@@ -22,7 +22,7 @@ function run(event, input, env) {
 
 function setup(cfg = {}) {
   const t = tmpHome();
-  fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, card_timing: 'after', reveal: 'next-turn', ...cfg }));
+  fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, ai: false, card_timing: 'after', reveal: 'next-turn', ...cfg }));
   return t;
 }
 
@@ -149,7 +149,7 @@ test('in-process handle(): SessionStart and SessionEnd never print (their stdout
 // ---- card_timing "during" (default): cards fill the time spent waiting ----------
 function during(cfg = {}) {
   const t = tmpHome();
-  fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, mode: 'think', reveal: 'next-turn', ...cfg }));
+  fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, ai: false, mode: 'think', reveal: 'next-turn', ...cfg }));
   return t;
 }
 
@@ -214,7 +214,7 @@ test('during: the tool-call hook is cheap when nothing is due', () => {
 
 test('default: one card holds the whole lesson (question + answer), nothing to reveal', () => {
   const t = tmpHome();
-  fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, mode: 'think', mid_run_interval: '3m' }));
+  fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, ai: false, mode: 'think', mid_run_interval: '3m' }));
   const base = { session_id: 'inline-1', cwd: PROJECT };
   const t0 = Date.UTC(2026, 8, 29, 10);
   const card = JSON.parse(handle('prompt', { ...base, prompt: 'build the feature' }, t.env, t0)).systemMessage;

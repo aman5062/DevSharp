@@ -31,6 +31,8 @@ function usage() {
     ...cmds,
     `  ${'doctor'.padEnd(9)} Check the installation`,
     `  ${'statusline'.padEnd(9)} One-line teaser for Claude Code's statusLine setting`,
+    `  ${'setup'.padEnd(9)} Connect another AI CLI: setup codex | gemini | opencode  [--remove]`,
+    `  ${'watch'.padEnd(9)} Companion pane for ANY AI CLI: a new card every minute  [--every 2m]`,
     '',
     'Inside Claude Code the same commands are available as /devsharp:<command>.',
   ].join('\n');
@@ -127,12 +129,79 @@ async function statusline() {
   return s.streak ? `🎯 DevSharp · ${s.streak}-day streak` : '🎯 DevSharp';
 }
 
+function setupCmd(args) {
+  const { setup } = require('../src/hosts/setup');
+  const remove = args.includes('--remove');
+  const hosts = args.filter((a) => !a.startsWith('--'));
+  if (!hosts.length) {
+    console.log([
+      'Connect DevSharp to another AI coding CLI:',
+      '  devsharp setup codex       OpenAI Codex CLI (hooks in ~/.codex/hooks.json)',
+      '  devsharp setup gemini      Gemini CLI (hooks in ~/.gemini/settings.json)',
+      '  devsharp setup opencode    opencode (plugin in ~/.config/opencode/plugins/)',
+      '  add --remove to undo. Claude Code: install the plugin instead.',
+      '  Any other CLI (Freebuff, Codebuff, Aider, Copilot, Cursor...): run `devsharp watch` in a split pane.',
+    ].join('\n'));
+    return;
+  }
+  for (const h of hosts) {
+    try {
+      const r = setup(h, { remove });
+      console.log(`${c('32', '✓')} ${remove ? 'Removed DevSharp from' : 'Connected DevSharp to'} ${h}: ${r.file || 'nothing to remove'}${!remove && h !== 'opencode' ? ' (backup: .devsharp-backup)' : ''}`);
+    } catch (e) {
+      console.error(`${c('31', '✗')} ${h}: ${e.message}`);
+      process.exitCode = 1;
+    }
+  }
+  if (!remove) console.log('Restart that CLI. Cards appear while it works; manage DevSharp with `devsharp <command>` in a terminal.');
+}
+
+// Universal companion: works next to any AI CLI (tmux/terminal split). Shows a card,
+// waits, shows the next one. n = next now, k = known, d = dismiss, q/Esc/Ctrl+C = quit.
+function watch(args) {
+  const { parseDuration } = require('../src/core/config');
+  const i = args.indexOf('--every');
+  const every = Math.max(15e3, parseDuration(i >= 0 ? args[i + 1] : '1m') || 60e3);
+  const tty = process.stdout.isTTY;
+  let timer = null;
+  let left = 0;
+  const show = () => {
+    const { text } = engine.runCommand('next', [], { sessionId: 'watch' });
+    if (tty) process.stdout.write('\u001b[2J\u001b[H');
+    process.stdout.write(`${colorize(text)}\n`);
+    left = Math.round(every / 1000);
+    if (tty) process.stdout.write(dim(`\n  next card in ${left}s · n next · k known · d dismiss · q quit\n`));
+  };
+  const tick = () => { left -= 1; if (left <= 0) show(); };
+  show();
+  timer = setInterval(tick, 1000);
+  if (!tty || !process.stdin.isTTY) return;
+  process.stdin.setRawMode(true);
+  process.stdin.resume();
+  process.stdin.on('data', (b) => {
+    const k = b.toString();
+    if (k === 'q' || k === '\u001b' || k === '\u0003') {
+      clearInterval(timer);
+      process.stdin.setRawMode(false);
+      process.stdout.write('\n');
+      process.exit(0);
+    }
+    if (k === 'n') show();
+    if (k === 'k' || k === 'd') {
+      engine.runCommand(k === 'k' ? 'known' : 'dismiss', [], { sessionId: 'watch' });
+      show();
+    }
+  });
+}
+
 async function main() {
   const [cmd = 'help', ...args] = process.argv.slice(2);
   if (cmd === '-h' || cmd === '--help' || cmd === 'help') return console.log(usage());
   if (cmd === '-v' || cmd === '--version') return console.log(require('../package.json').version);
   if (cmd === 'doctor') return console.log(doctor());
   if (cmd === 'statusline') return process.stdout.write(`${await statusline()}\n`);
+  if (cmd === 'setup') return setupCmd(args);
+  if (cmd === 'watch') return watch(args);
   if (!engine.COMMANDS[cmd]) {
     console.error(`Unknown command "${cmd}".\n\n${usage()}`);
     process.exitCode = 2;

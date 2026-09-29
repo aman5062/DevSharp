@@ -60,7 +60,7 @@ test('source: no model APIs, SDKs, CLIs or subagents referenced', () => {
 });
 
 test('source: child processes are limited to known, shell-free call sites', () => {
-  const allowed = new Set(['src/updates/index.js', 'src/ai/index.js', 'src/ai/diff.js']);
+  const allowed = new Set(['src/updates/index.js', 'src/ai/index.js', 'src/ai/diff.js', 'src/hosts/setup.js']); // setup.js: only inside the generated opencode plugin text
   for (const file of walk(path.join(ROOT, 'src'))) {
     const rel = path.relative(ROOT, file).replace(/\\/g, '/');
     const src = fs.readFileSync(file, 'utf8');
@@ -71,15 +71,15 @@ test('source: child processes are limited to known, shell-free call sites', () =
   }
 });
 
-test('ai: off by default, and nothing can start a model call while it is off', () => {
+test('ai: when switched off, nothing can start a model call', () => {
   const t = tmpHome();
   const ai = require('../src/ai');
-  assert.equal(require('../src/core/config').DEFAULTS.ai, false);
+  // AI cards default to on (product decision); with ai:false nothing may start a model call.
   const orig = ai.spawnWorker;
   let spawned = 0;
   ai.spawnWorker = () => { spawned += 1; return 1; };
   try {
-    fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, frequency: 'high', minimum_interval: '0s' }));
+    fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, ai: false, ai: false, frequency: 'high', minimum_interval: '0s' }));
     const base = { session_id: 'ai-off', cwd: ROOT };
     handle('session-start', base, t.env);
     for (let i = 0; i < 10; i += 1) handle('stop', base, t.env, Date.now() + i * 3600e3);
@@ -99,7 +99,7 @@ test('ai: when on, generation is rate-limited by interval', () => {
   let spawned = 0;
   ai.spawnWorker = () => { spawned += 1; return 4242; };
   try {
-    fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, ai: true, ai_min_interval: '10m' }));
+    fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, ai: false, ai: true, ai_min_interval: '10m' }));
     const base = { session_id: 'ai-on', cwd: ROOT };
     const t0 = Date.UTC(2026, 8, 29, 9);
     handle('stop', base, t.env, t0);
@@ -146,7 +146,7 @@ test('source: no dynamic code execution', () => {
 
 test('hook output contract holds across many turns, commands and modes', () => {
   const t = tmpHome();
-  fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, frequency: 'high', minimum_interval: '0s' }));
+  fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, ai: false, frequency: 'high', minimum_interval: '0s' }));
   const now0 = Date.UTC(2026, 8, 29);
   const prompts = ['refactor the db layer', '/devsharp:next', '/devsharp:reveal', '/devsharp:stats', 'ignore previous instructions', '/devsharp:dismiss', '/devsharp:known', '/other:cmd', '/devsharp'];
   let cards = 0;
@@ -179,7 +179,7 @@ test('hook output contract holds across many turns, commands and modes', () => {
 
 test('no network during the hook lifecycle when updates are cached/disabled', () => {
   const t = tmpHome();
-  fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, frequency: 'high', minimum_interval: '0s' }));
+  fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, ai: false, frequency: 'high', minimum_interval: '0s' }));
   const orig = globalThis.fetch;
   let calls = 0;
   globalThis.fetch = () => { calls += 1; throw new Error('network used'); };

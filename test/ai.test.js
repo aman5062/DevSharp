@@ -106,7 +106,7 @@ test('prompt: data is fenced and labelled untrusted', () => {
 
 function aiHome(extra = {}) {
   const t = tmpHome();
-  fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, ai: true, ai_daily_limit: 2, ...extra }));
+  fs.writeFileSync(path.join(t.home, 'config.json'), JSON.stringify({ updates: false, ai: false, ai: true, ai_daily_limit: 2, ...extra }));
   return t;
 }
 
@@ -199,6 +199,8 @@ test('display: AI cards are preferred once, labelled, and never repeat', () => {
 test('/devsharp:ai status, on, off', () => {
   const t = tmpHome();
   const base = { session_id: 'cmd', cwd: t.home };
+  assert.match(JSON.parse(handle('prompt', { ...base, prompt: '/devsharp:ai' }, t.env)).reason, /Enabled:\s+yes/, 'on by default');
+  handle('prompt', { ...base, prompt: '/devsharp:ai off' }, t.env);
   assert.match(JSON.parse(handle('prompt', { ...base, prompt: '/devsharp:ai' }, t.env)).reason, /Enabled:\s+no/);
   assert.match(JSON.parse(handle('prompt', { ...base, prompt: '/devsharp:ai on' }, t.env)).reason, /never touches this conversation/);
   assert.match(JSON.parse(handle('prompt', { ...base, prompt: '/devsharp:ai' }, t.env)).reason, /Enabled:\s+yes/);

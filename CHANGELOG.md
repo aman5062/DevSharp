@@ -6,6 +6,19 @@ All notable changes to DevSharp are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-09-29
+
+### Added
+
+- Other AI CLIs: `devsharp setup codex|gemini|opencode` (backs up and merges configs,
+  `--remove` undoes it) and `devsharp watch`, a companion pane for any CLI (Freebuff,
+  Codebuff, Aider, Copilot CLI, Cursor...). Codex, Gemini and opencode support is untested.
+
+### Changed
+
+- AI cards are on by default. The first card says so once and shows how to turn them off.
+- `mid_run_interval` defaults to 1 minute.
+
 ## [0.2.0] — 2026-09-29
 
 ### Changed
