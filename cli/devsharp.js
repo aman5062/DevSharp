@@ -33,6 +33,7 @@ function usage() {
     `  ${'statusline'.padEnd(9)} One-line teaser for Claude Code's statusLine setting`,
     `  ${'setup'.padEnd(9)} Connect another AI CLI: setup codex | gemini | opencode  [--remove]`,
     `  ${'watch'.padEnd(9)} Companion pane for ANY AI CLI: a new card every minute  [--every 2m]`,
+    `  ${'run'.padEnd(9)} Start any AI CLI with a DevSharp card panel beside it: devsharp run freebuff`,
     '',
     'Inside Claude Code the same commands are available as /devsharp:<command>.',
   ].join('\n');
@@ -194,6 +195,43 @@ function watch(args) {
   });
 }
 
+// `devsharp run <cli> [args]`: for AI CLIs without a hook API (Freebuff, Codebuff,
+// Aider, ...). Uses tmux to put the CLI and a `devsharp watch` panel side by side.
+function runWith(args) {
+  const { spawnSync } = require('child_process');
+  if (!args.length) { console.log('Usage: devsharp run <cli> [args]   e.g. devsharp run freebuff'); return; }
+  const shq = (x) => `'${String(x).replace(/'/g, `'\\''`)}'`;
+  const target = args.map(shq).join(' ');
+  const watchCmd = `${shq(process.execPath)} ${shq(__filename)} watch`;
+  const has = spawnSync('tmux', ['-V'], { stdio: 'ignore' }).status === 0;
+  if (!has || process.platform === 'win32') {
+    console.log([
+      `tmux is not available${process.platform === 'win32' ? ' on Windows' : ''}. Open two terminals side by side instead:`,
+      `  terminal 1:  ${args.join(' ')}`,
+      '  terminal 2:  devsharp watch',
+      '(Windows Terminal: Alt+Shift+D splits the pane. VS Code: the split-terminal button.)',
+      'Or install tmux (brew install tmux / sudo apt install tmux) and run this again.',
+    ].join('\n'));
+    return;
+  }
+  const width = String(Math.min(70, Math.max(46, Math.floor((process.stdout.columns || 160) * 0.35))));
+  if (process.env.TMUX) {
+    // Already inside tmux: add the card panel on the right, run the CLI here.
+    spawnSync('tmux', ['split-window', '-h', '-d', '-l', width, watchCmd], { stdio: 'inherit' });
+    const r = spawnSync(args[0], args.slice(1), { stdio: 'inherit' });
+    process.exitCode = r.status || 0;
+    return;
+  }
+  // New tmux session: CLI on the left, cards on the right; closing the CLI ends the session.
+  const name = `devsharp-${process.pid}`;
+  spawnSync('tmux', ['new-session', '-d', '-s', name, '-x', String(process.stdout.columns || 200), '-y', String(process.stdout.rows || 50),
+    `${target}; tmux kill-session -t ${name}`], { stdio: 'inherit' });
+  spawnSync('tmux', ['split-window', '-h', '-d', '-l', width, '-t', name, watchCmd], { stdio: 'inherit' });
+  spawnSync('tmux', ['select-pane', '-t', `${name}:0.0`], { stdio: 'ignore' });
+  const r = spawnSync('tmux', ['attach-session', '-t', name], { stdio: 'inherit' });
+  process.exitCode = r.status || 0;
+}
+
 async function main() {
   const [cmd = 'help', ...args] = process.argv.slice(2);
   if (cmd === '-h' || cmd === '--help' || cmd === 'help') return console.log(usage());
@@ -202,6 +240,7 @@ async function main() {
   if (cmd === 'statusline') return process.stdout.write(`${await statusline()}\n`);
   if (cmd === 'setup') return setupCmd(args);
   if (cmd === 'watch') return watch(args);
+  if (cmd === 'run') return runWith(args);
   if (!engine.COMMANDS[cmd]) {
     console.error(`Unknown command "${cmd}".\n\n${usage()}`);
     process.exitCode = 2;

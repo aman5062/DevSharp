@@ -6,6 +6,13 @@ All notable changes to DevSharp are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.3.1] — 2026-09-29
+
+### Added
+
+- `devsharp run <cli>` (e.g. `devsharp run freebuff`): starts any AI CLI with a DevSharp
+  card panel beside it via tmux. For CLIs with no hook API, such as Freebuff and Codebuff.
+
 ## [0.3.0] — 2026-09-29
 
 ### Added

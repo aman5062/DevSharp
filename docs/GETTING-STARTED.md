@@ -186,7 +186,8 @@ just changed, and to summarise real release notes for your tools:
 ```bash
 npm install -g github:aman5062/DevSharp
 devsharp setup codex      # or: gemini, opencode
-devsharp watch            # any other CLI (Freebuff, Aider, Copilot...): run in a split pane
+devsharp run freebuff     # Freebuff or any other CLI: opens it with a card panel beside it
+devsharp watch            # or run this yourself in any split pane / second terminal
 ```
 
 ## 8. Updating and removing

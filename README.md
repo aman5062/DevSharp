@@ -45,7 +45,7 @@ Restart Claude Code and type `/devsharp:next`. New here? Read the
 | **OpenAI Codex CLI** | `devsharp setup codex` (adds hooks to `~/.codex/hooks.json`) | on prompt and when the agent finishes |
 | **Gemini CLI** | `devsharp setup gemini` (adds hooks to `~/.gemini/settings.json`) | on prompt, during tool runs, when it finishes |
 | **opencode** | `devsharp setup opencode` (adds a plugin) | as pop-up toasts |
-| **Anything else**: Freebuff/Codebuff, Aider, Copilot CLI, Cursor... | `devsharp watch` in a split pane | a new card every minute |
+| **Freebuff**, Codebuff, Aider, Copilot CLI, anything else | `devsharp run freebuff` (opens it with a card panel beside it, via tmux), or `devsharp watch` in any split pane | a new card every minute |
 
 Install the CLI first: `npm install -g github:aman5062/DevSharp`. Each `setup` backs up
 the file it edits, and `--remove` undoes it. Example for any CLI with tmux:

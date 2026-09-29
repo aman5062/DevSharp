@@ -1,7 +1,7 @@
 {
   "name": "devsharp",
   "displayName": "DevSharp",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A zero-token learning companion: short technology facts, Think First questions and tech updates between Claude turns. No LLM calls, offline-first, no telemetry.",
   "author": {
     "name": "Aman",
