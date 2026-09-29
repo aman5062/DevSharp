@@ -1,10 +1,21 @@
 {
   "name": "devsharp",
+  "displayName": "DevSharp",
   "version": "0.1.0",
   "description": "A zero-token learning companion: short technology facts, Think First questions and tech updates between Claude turns. No LLM calls, offline-first, no telemetry.",
-  "author": { "name": "Aman", "url": "https://github.com/aman5062" },
+  "author": {
+    "name": "Aman",
+    "url": "https://github.com/aman5062"
+  },
   "homepage": "https://github.com/aman5062/DevSharp",
   "repository": "https://github.com/aman5062/DevSharp",
   "license": "MIT",
-  "keywords": ["learning", "education", "flashcards", "developer-tools", "offline", "zero-token"]
+  "keywords": [
+    "learning",
+    "education",
+    "flashcards",
+    "developer-tools",
+    "offline",
+    "zero-token"
+  ]
 }
