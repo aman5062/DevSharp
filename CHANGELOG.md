@@ -6,6 +6,16 @@ All notable changes to DevSharp are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.3.2] — 2026-09-30
+
+### Fixed
+
+- A hook could run forever if its Claude Code session died mid-hook: stdin never closed and
+  the host's `timeout` no longer applied. One orphaned `stop` hook spun a CPU core for 24h.
+  Every hook now exits by itself after 10s (the longest any host allows).
+- `wrap()` looped forever when a character was wider than the line (e.g. a CJK character or
+  emoji at width 1, or width 0). It now always takes at least one character per line.
+
 ## [0.3.1] — 2026-09-29
 
 ### Added

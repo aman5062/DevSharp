@@ -347,3 +347,8 @@ test('knowledge: item text is sanitised on load', () => {
   assert.equal(it.body, 'ab');
   assert.equal(it.source.url, null);
 });
+
+test('render: wrap terminates when a character is wider than the line', () => {
+  assert.deepEqual(wrap('日本', 1), ['日', '本']);
+  assert.deepEqual(wrap('ab', 0), ['a', 'b']);
+});

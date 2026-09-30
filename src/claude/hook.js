@@ -19,6 +19,10 @@ let engineModule = null;
 const engine = () => engineModule || (engineModule = require('../core/engine'));
 
 const MAX_INPUT = 1024 * 1024;
+// Hard ceiling on a hook's life. The host's own `timeout` only applies while the host is
+// alive: if the Claude Code session dies mid-hook, stdin never ends and nothing else would
+// ever stop us (seen in the wild spinning a CPU core for a day). No host allows more than 10s.
+const MAX_LIFE_MS = Number(process.env.DEVSHARP_HOOK_MAX_MS) || 10000;
 const COMMAND_RE = /^\s*\/devsharp:([a-z-]{1,20})(?:\s+([\s\S]*))?$/;
 
 function readStdin() {
@@ -93,6 +97,7 @@ function handle(event, input, env = process.env, now = Date.now(), host = 'claud
 }
 
 async function main() {
+  setTimeout(() => process.exit(0), MAX_LIFE_MS).unref();
   const event = process.argv[2];
   const hostArg = process.argv.find((a) => a.startsWith('--host='));
   const host = hostArg && /^--host=[a-z]{2,12}$/.test(hostArg) ? hostArg.slice(7) : 'claude';

@@ -227,3 +227,20 @@ test('default: one card holds the whole lesson (question + answer), nothing to r
   assert.equal(handle('stop', base, t.env, t0 + 200e3), '');
   t.cleanup();
 });
+
+test('hook exits on its own when stdin never closes (orphaned by a dead session)', () => {
+  const t = setup();
+  const { spawn } = require('child_process');
+  return new Promise((resolve, reject) => {
+    const started = Date.now();
+    // stdin is a pipe we never end, like a Claude Code session that died mid-hook.
+    const child = spawn(process.execPath, [HOOK, 'stop'], { env: { ...t.env, DEVSHARP_HOOK_MAX_MS: '300' }, stdio: ['pipe', 'ignore', 'ignore'] });
+    const guard = setTimeout(() => { child.kill('SIGKILL'); reject(new Error('hook did not exit by itself')); }, 5000);
+    child.on('exit', (code) => {
+      clearTimeout(guard);
+      assert.equal(code, 0);
+      assert.ok(Date.now() - started < 5000);
+      resolve();
+    });
+  });
+});

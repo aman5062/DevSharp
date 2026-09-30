@@ -46,7 +46,8 @@ function wrap(text, width, { pre = false } = {}) {
         if (line) { out.push(line); line = ''; }
         let cut = '';
         for (const ch of word) {
-          if (displayWidth(cut + ch) > width) break;
+          // Always take at least one character, or a character wider than the line loops forever.
+          if (cut && displayWidth(cut + ch) > width) break;
           cut += ch;
         }
         out.push(cut);
